@@ -8,7 +8,8 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.ComponentActivity
 import dev.atick.core.utils.extensions.hasPermission
-import dev.atick.core.utils.extensions.launchForResult
+import dev.atick.core.utils.extensions.resultLauncher
+import dev.atick.core.utils.extensions.showAlertDialog
 import javax.inject.Inject
 
 class BLEManagerImpl @Inject constructor() : BLEManager {
@@ -35,14 +36,23 @@ class BLEManagerImpl @Inject constructor() : BLEManager {
     ) {
         if (!bluetoothAdapter.isEnabled) {
             if (isPermissionGranted(activity)) {
-                val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                activity.launchForResult(
-                    intent = enableIntent,
-                    onSuccess = onSuccess,
-                    onFailure = {
-                        activity.finishAffinity()
-                    }
+                val enableIntent = Intent(
+                    BluetoothAdapter.ACTION_REQUEST_ENABLE
                 )
+                val resultLauncher = activity.resultLauncher(
+                    onSuccess = onSuccess,
+                    onFailure = { activity.finishAffinity() }
+                )
+                activity.showAlertDialog(
+                    title = "Enable Bluetooth",
+                    message = "This app requires Bluetooth connection " +
+                        "to work properly. Please enable Bluetooth.",
+                    onApprove = {
+                        resultLauncher.launch(enableIntent)
+                    },
+                    onCancel = { activity.finishAffinity() }
+                )
+
             } else {
                 askForPermissions()
             }
