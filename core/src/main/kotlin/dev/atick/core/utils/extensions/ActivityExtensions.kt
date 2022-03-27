@@ -22,3 +22,17 @@ fun ComponentActivity.resultLauncher(
     }
     return resultCallback
 }
+
+fun ComponentActivity.permissionLauncher(
+    onSuccess: () -> Unit = {},
+    onFailure: () -> Unit = {}
+): ActivityResultLauncher<Array<String>> {
+    val resultCallback = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.entries.all { it.value }
+        if (granted) onSuccess.invoke()
+        else onFailure.invoke()
+    }
+    return resultCallback
+}
