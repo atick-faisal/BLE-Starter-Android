@@ -7,6 +7,7 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import com.orhanobut.logger.Logger
 import dev.atick.ble.data.BLEDevice
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
@@ -14,20 +15,21 @@ import javax.inject.Inject
 
 @SuppressLint("MissingPermission")
 @kotlinx.coroutines.ExperimentalCoroutinesApi
-class BLEManagerImpl @Inject constructor(
-    private val bluetoothAdapter: BluetoothAdapter?,
-) : BLEManager {
+class BleManagerImpl @Inject constructor(
+    bluetoothAdapter: BluetoothAdapter?,
+) : BleManager {
 
     private val scanSettings = ScanSettings.Builder()
         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
         .build()
 
+    private lateinit var scanCallback: ScanCallback
+    private val bleScanner = bluetoothAdapter?.bluetoothLeScanner
     private val scanResults = mutableListOf<ScanResult>()
 
-
-    override fun scanDevices(): Flow<List<BLEDevice>> {
+    override fun scanForDevices(): Flow<List<BLEDevice>> {
         return callbackFlow {
-            val scanCallback = object : ScanCallback() {
+            scanCallback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult) {
                     val indexQuery = scanResults.indexOfFirst {
                         it.device.address == result.device.address
@@ -35,14 +37,15 @@ class BLEManagerImpl @Inject constructor(
                     if (indexQuery != -1) {
                         scanResults[indexQuery] = result
                     } else {
+                        Logger.i("Found device: $result")
                         val devices = scanResults.map { scanResult ->
                             BLEDevice(
                                 name = scanResult.device?.name ?: "Unnamed",
                                 address = scanResult.device?.address ?: "null"
                             )
                         }
-                        trySend(devices)
                         scanResults.add(result)
+                        trySend(devices)
                     }
                 }
 
@@ -51,11 +54,18 @@ class BLEManagerImpl @Inject constructor(
                 }
             }
 
-            bluetoothAdapter?.let { adapter ->
+            bleScanner?.let { scanner ->
                 scanResults.clear()
-                val bleScanner = adapter.bluetoothLeScanner
-                bleScanner.startScan(null, scanSettings, scanCallback)
+                scanner.startScan(null, scanSettings, scanCallback)
+            }
+
+            awaitClose {
+                stopScan()
             }
         }
+    }
+
+    override fun stopScan() {
+        bleScanner?.stopScan(scanCallback)
     }
 }

@@ -44,8 +44,7 @@ class BleUtilsImpl @Inject constructor(
 
     override fun isAllPermissionsProvided(activity: ComponentActivity): Boolean {
         return isBluetoothPermissionGranted(activity) &&
-            isLocationPermissionGranted(activity) &&
-            (bluetoothAdapter?.isEnabled ?: false)
+            isLocationPermissionGranted(activity)
     }
 
     override fun setupBluetooth(activity: ComponentActivity) {
@@ -59,15 +58,18 @@ class BleUtilsImpl @Inject constructor(
     }
 
     private fun askForPermissions() {
+        val permissions = mutableListOf(
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            permissionLauncher.launch(
-                arrayOf(
+            permissions.addAll(
+                listOf(
                     Manifest.permission.BLUETOOTH_SCAN,
                     Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
             )
         }
+        permissionLauncher.launch(permissions.toTypedArray())
     }
 
     private fun showPermissionRationale(activity: ComponentActivity) {
@@ -96,8 +98,6 @@ class BleUtilsImpl @Inject constructor(
     }
 
     private fun isLocationPermissionGranted(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            context.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-        } else true
+        return context.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 }
