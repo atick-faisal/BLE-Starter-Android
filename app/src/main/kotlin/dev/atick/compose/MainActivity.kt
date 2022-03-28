@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.orhanobut.logger.Logger
 import dagger.hilt.android.AndroidEntryPoint
-import dev.atick.ble.repository.BLEManager
 import dev.atick.ble.utils.BleUtils
 import dev.atick.compose.ui.theme.JetpackComposeStarterTheme
 import javax.inject.Inject
@@ -42,7 +41,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        bleUtils.askForPermissions(this)
+        bleUtils.setupBluetooth(this)
     }
 }
 
