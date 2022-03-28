@@ -1,12 +1,13 @@
 package dev.atick.ble.repository
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
+import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.Context
 import com.orhanobut.logger.Logger
-import dev.atick.ble.data.BLEDevice
+import dev.atick.ble.data.ConnectionStatus
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -25,27 +26,24 @@ class BleManagerImpl @Inject constructor(
 
     private lateinit var scanCallback: ScanCallback
     private val bleScanner = bluetoothAdapter?.bluetoothLeScanner
-    private val scanResults = mutableListOf<ScanResult>()
+    private val scanResults = mutableListOf<BluetoothDevice>()
+    private var bluetoothGatt: BluetoothGatt? = null
 
-    override fun scanForDevices(): Flow<List<BLEDevice>> {
+    override fun scanForDevices(): Flow<List<BluetoothDevice>> {
         return callbackFlow {
             scanCallback = object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult) {
-                    val indexQuery = scanResults.indexOfFirst {
-                        it.device.address == result.device.address
+                    val indexQuery = scanResults.indexOfFirst { device ->
+                        device.address == result.device.address
                     }
                     if (indexQuery != -1) {
-                        scanResults[indexQuery] = result
+                        scanResults[indexQuery] = result.device
                     } else {
                         Logger.i("Found device: $result")
-                        val devices = scanResults.map { scanResult ->
-                            BLEDevice(
-                                name = scanResult.device?.name ?: "Unnamed",
-                                address = scanResult.device?.address ?: "null"
-                            )
+                        result.device?.let { device ->
+                            scanResults.add(device)
+                            trySend(scanResults)
                         }
-                        scanResults.add(result)
-                        trySend(devices)
                     }
                 }
 
@@ -64,6 +62,50 @@ class BleManagerImpl @Inject constructor(
             }
         }
     }
+
+    override fun connect(
+        context: Context,
+        device: BluetoothDevice
+    ): Flow<ConnectionStatus> =
+        callbackFlow {
+            val connectionCallback = object : BluetoothGattCallback() {
+                override fun onConnectionStateChange(
+                    gatt: BluetoothGatt?,
+                    status: Int,
+                    newState: Int
+                ) {
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+                        when (newState) {
+                            BluetoothProfile.STATE_CONNECTING -> {
+                                Logger.i("Connecting")
+                                trySend(ConnectionStatus.CONNECTING)
+                                bluetoothGatt = gatt
+                            }
+                            BluetoothProfile.STATE_CONNECTED -> {
+                                Logger.i("Connected")
+                                trySend(ConnectionStatus.CONNECTED)
+                            }
+                            BluetoothProfile.STATE_DISCONNECTED -> {
+                                Logger.i("Disconnected")
+                                trySend(ConnectionStatus.DISCONNECTED)
+                                gatt?.close()
+                            }
+                        }
+                    } else {
+                        Logger.i("Failed to Connect")
+                        trySend(ConnectionStatus.DISCONNECTED)
+                        gatt?.close()
+                    }
+                }
+            }
+
+            device.connectGatt(context, false, connectionCallback)
+
+            awaitClose {
+                bluetoothGatt?.close()
+            }
+        }
+
 
     override fun stopScan() {
         bleScanner?.stopScan(scanCallback)

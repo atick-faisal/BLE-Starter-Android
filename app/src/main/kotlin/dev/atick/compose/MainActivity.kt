@@ -1,5 +1,7 @@
 package dev.atick.compose
 
+import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,14 +16,11 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
 import com.orhanobut.logger.Logger
 import dagger.hilt.android.AndroidEntryPoint
-import dev.atick.ble.data.BLEDevice
 import dev.atick.ble.repository.BleManager
 import dev.atick.ble.utils.BleUtils
 import dev.atick.compose.ui.theme.JetpackComposeStarterTheme
 import dev.atick.core.utils.extensions.stateInDelayed
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -33,7 +32,7 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var bleManager: BleManager
 
-    private lateinit var devices: StateFlow<List<BLEDevice>>
+    private lateinit var devices: StateFlow<List<BluetoothDevice>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +75,8 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(devices: StateFlow<List<BLEDevice>>) {
+@SuppressLint("MissingPermission")
+fun Greeting(devices: StateFlow<List<BluetoothDevice>>) {
 
     val listItems by devices.collectAsState()
 
