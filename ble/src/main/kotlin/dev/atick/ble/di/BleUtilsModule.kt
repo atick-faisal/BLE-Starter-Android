@@ -4,17 +4,17 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.atick.ble.repository.BLEManager
-import dev.atick.ble.repository.BLEManagerImpl
+import dev.atick.ble.utils.BleUtils
+import dev.atick.ble.utils.BleUtilsImpl
 import javax.inject.Singleton
 
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class BLEModule {
+abstract class BleUtilsModule {
     @Binds
     @Singleton
-    abstract fun bindBLEManager(
-        bleManagerImpl: BLEManagerImpl
-    ): BLEManager
+    abstract fun bindBleUtils(
+        bleUtilsImpl: BleUtilsImpl
+    ): BleUtils
 }

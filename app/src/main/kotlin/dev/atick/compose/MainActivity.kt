@@ -8,8 +8,10 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.orhanobut.logger.Logger
 import dagger.hilt.android.AndroidEntryPoint
 import dev.atick.ble.repository.BLEManager
+import dev.atick.ble.utils.BleUtils
 import dev.atick.compose.ui.theme.JetpackComposeStarterTheme
 import javax.inject.Inject
 
@@ -17,13 +19,16 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject
-    lateinit var bleManager: BLEManager
+    lateinit var bleUtils: BleUtils
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        bleManager.initializeBluetooth(this)
-        bleManager.enableBluetooth(this)
+        if (!bleUtils.isAllPermissionsProvided(this)) {
+            bleUtils.initialize(this) {
+                Logger.i("SUCCESS")
+            }
+        }
 
         setContent {
             JetpackComposeStarterTheme {
@@ -33,6 +38,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        bleUtils.askForPermissions(this)
     }
 }
 
