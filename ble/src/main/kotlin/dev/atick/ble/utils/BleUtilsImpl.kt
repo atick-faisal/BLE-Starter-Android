@@ -1,7 +1,6 @@
 package dev.atick.ble.utils
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.os.Build
@@ -18,23 +17,15 @@ class BleUtilsImpl @Inject constructor(
 ) : BleUtils {
 
     private val isBluetoothAvailable: Boolean = bluetoothAdapter == null
-    private lateinit var blePermissionLauncher: ActivityResultLauncher<Array<String>>
-    private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
+    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
     override fun initialize(
         activity: ComponentActivity,
         onSuccess: () -> Unit
     ) {
-        blePermissionLauncher = activity.permissionLauncher(
+        permissionLauncher = activity.permissionLauncher(
             onSuccess = {
-                Logger.i("Bluetooth Permission Granted")
-                showLocationPermissionRationale(activity)
-            },
-            onFailure = { activity.finishAffinity() }
-        )
-        locationPermissionLauncher = activity.permissionLauncher(
-            onSuccess = {
-                Logger.i("Location Permission Granted")
+                Logger.i("All Permissions Granted")
                 onSuccess.invoke()
             },
             onFailure = { activity.finishAffinity() }
@@ -50,64 +41,37 @@ class BleUtilsImpl @Inject constructor(
     override fun askForPermissions(activity: ComponentActivity) {
         Logger.i("CALLED")
         if (bluetoothAdapter == null) activity.finishAffinity()
-        if (!isBluetoothPermissionGranted(activity)) {
-            showBluetoothPermissionRationale(activity)
-        } else {
-            showLocationPermissionRationale(activity)
-        }
+        showPermissionRationale(activity)
     }
 
     override fun enableBluetooth(activity: ComponentActivity, onSuccess: () -> Unit) {
         TODO("Not yet implemented")
     }
 
-    private fun askForBluetoothPermission() {
+    private fun askForPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            blePermissionLauncher.launch(
+            permissionLauncher.launch(
                 arrayOf(
                     Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                )
-            )
-        }
-    }
-
-    @SuppressLint("ObsoleteSdkInt")
-    private fun askForLocationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            locationPermissionLauncher.launch(
-                arrayOf(
+                    Manifest.permission.BLUETOOTH_CONNECT,
                     Manifest.permission.ACCESS_FINE_LOCATION
                 )
             )
         }
     }
 
-    private fun showBluetoothPermissionRationale(activity: ComponentActivity) {
-        if (!isBluetoothPermissionGranted(activity)) {
+    private fun showPermissionRationale(activity: ComponentActivity) {
+        if (!isAllPermissionsProvided(activity)) {
             activity.showAlertDialog(
-                title = "Enable Bluetooth",
+                title = "Permission Required",
                 message = "This app requires Bluetooth connection " +
-                    "to work properly. Please enable Bluetooth.",
+                    "to work properly. Please provide Bluetooth permission. " +
+                    "Scanning for BLE devices also requires Location Access " +
+                    "Permission. However, location information will NOT be" +
+                    "used for tracking.",
                 onApprove = {
-                    Logger.i("Bluetooth Rationale Approved")
-                    askForBluetoothPermission()
-                },
-                onCancel = { activity.finishAffinity() }
-            )
-        }
-    }
-
-    private fun showLocationPermissionRationale(activity: ComponentActivity) {
-        if (!isLocationPermissionGranted(activity)) {
-            activity.showAlertDialog(
-                title = "Provide Location Access",
-                message = "Scanning for BLE devices require location Access. " +
-                    "This is only required for Bluetooth Scanning and your " +
-                    "location information will NOT be used for tracking.",
-                onApprove = {
-                    Logger.i("Location Rationale Approved")
-                    askForLocationPermission()
+                    Logger.i("Permission Rationale Approved")
+                    askForPermissions()
                 },
                 onCancel = { activity.finishAffinity() }
             )
