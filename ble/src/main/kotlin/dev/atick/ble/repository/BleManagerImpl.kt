@@ -9,7 +9,6 @@ import android.content.Context
 import com.orhanobut.logger.Logger
 import dev.atick.ble.data.BleCallbacks
 import dev.atick.ble.data.ConnectionStatus
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -62,6 +61,7 @@ class BleManagerImpl @Inject constructor(
                                 trySend(BleCallbacks.ConnectionCallback(
                                     ConnectionStatus.DISCONNECTED
                                 ))
+                                gatt?.close()
                             }
                         }
                     } else {
@@ -69,12 +69,29 @@ class BleManagerImpl @Inject constructor(
                         trySend(BleCallbacks.ConnectionCallback(
                             ConnectionStatus.DISCONNECTED
                         ))
+                        gatt?.close()
+                    }
+                }
+
+                override fun onServicesDiscovered(
+                    gatt: BluetoothGatt?,
+                    status: Int
+                ) {
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+                        gatt?.let {
+                            Logger.i("Found ${it.services?.size} Services")
+                            trySend(BleCallbacks.ServicesCallback(it))
+                        }
+                    }
+                    else {
+                        Logger.e("Service Discovery Failed")
+                        bluetoothGatt?.close()
                     }
                 }
             }
 
             awaitClose {
-                bluetoothGatt?.close()
+//                bluetoothGatt?.close()
             }
         }
 
@@ -136,30 +153,9 @@ class BleManagerImpl @Inject constructor(
     }
 
 
-    override fun discoverServices(): Flow<List<BluetoothGattService>> {
-        return callbackFlow {
-            object: BluetoothGattCallback() {
-                override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-                    Logger.i("Size : ${gatt?.services?.size}")
-                    if (status == BluetoothGatt.GATT_SUCCESS) {
-                        bluetoothGatt?.let {
-                            trySend(it.services ?: listOf())
-                        }
-                    }
-                    else {
-                        Logger.e("Service Discovery Failed")
-                        bluetoothGatt?.close()
-                    }
-                }
-            }
-
-            Logger.i("Discovering Services $bluetoothGatt")
-            bluetoothGatt?.discoverServices()
-
-            awaitClose {
-                bluetoothGatt?.close()
-            }
-        }
+    override fun discoverServices() {
+        Logger.i("Discovering ...")
+        bluetoothGatt?.discoverServices()
     }
 
 

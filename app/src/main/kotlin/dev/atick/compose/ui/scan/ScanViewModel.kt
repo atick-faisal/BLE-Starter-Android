@@ -9,6 +9,7 @@ import dev.atick.ble.data.BleDevice
 import dev.atick.ble.data.ConnectionStatus
 import dev.atick.ble.repository.BleManager
 import dev.atick.core.ui.BaseViewModel
+import dev.atick.core.utils.extensions.shareInDelayed
 import dev.atick.core.utils.extensions.stateInDelayed
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
@@ -22,10 +23,10 @@ class ScanViewModel @Inject constructor(
     private val bleManager: BleManager
 ) : BaseViewModel() {
 
-    val connectionStatus: StateFlow<ConnectionStatus>
-    = bleManager.bleCallbacks
+    val connectionStatus: StateFlow<ConnectionStatus> = bleManager.bleCallbacks
         .filter { it is BleCallbacks.ConnectionCallback }
         .map { it.data as ConnectionStatus }
+        .shareInDelayed(viewModelScope)
         .stateInDelayed(
             initialValue = ConnectionStatus.DISCONNECTED,
             scope = viewModelScope

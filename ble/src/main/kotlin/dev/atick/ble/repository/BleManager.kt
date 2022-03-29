@@ -15,6 +15,6 @@ interface BleManager {
 
     fun scanForDevices(): Flow<List<BluetoothDevice>>
     fun connect(context: Context, deviceAddress: String)
-    fun discoverServices(): Flow<List<BluetoothGattService>>
+    fun discoverServices()
     fun stopScan()
 }

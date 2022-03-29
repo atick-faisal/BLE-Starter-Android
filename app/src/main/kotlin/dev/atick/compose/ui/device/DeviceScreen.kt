@@ -25,12 +25,14 @@ fun DeviceScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        LazyColumn {
-            items(services) { service ->
-                Button(onClick = { /*TODO*/ }) {
-                    Text(text = service.toString())
-                }
-            }
-        }
+//        LazyColumn {
+//            items(services) { service ->
+//                Button(onClick = { /*TODO*/ }) {
+//                    Text(text = service.toString())
+//                }
+//            }
+//        }
+        
+        Text(text = services.toString())
     }
 }
