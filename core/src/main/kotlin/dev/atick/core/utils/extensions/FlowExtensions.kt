@@ -18,6 +18,6 @@ fun <T> Flow<T>.shareInDelayed(scope: CoroutineScope): SharedFlow<T> {
     return this.shareIn(
         scope = scope,
         replay = 1,
-        started = SharingStarted.WhileSubscribed()
+        started = SharingStarted.WhileSubscribed(5000L)
     )
 }

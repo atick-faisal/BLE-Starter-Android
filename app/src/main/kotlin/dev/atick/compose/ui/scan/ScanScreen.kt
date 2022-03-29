@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -23,14 +24,23 @@ fun ScanScreen(
     viewModel: ScanViewModel = viewModel()
 ) {
     val devices by viewModel.devices.collectAsState()
-    val connectionStatus by viewModel.connectionStatus.collectAsState()
+
+    val connectionStatus by viewModel.connectionStatus.observeAsState()
     var connectionInitiated by remember { mutableStateOf(false) }
+//    val services by viewModel.services.observeAsState()
 
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        //        AnimatedVisibility(visible = connectionInitiated) {
+        Text(text = connectionStatus?.name.toString())
+//        if (connectionStatus == ConnectionStatus.CONNECTED) {
+//            navigateToDeviceFragment.invoke()
+//        }
+//        }
+
         LazyColumn {
             items(devices) { device ->
                 Button(
@@ -46,11 +56,14 @@ fun ScanScreen(
             }
         }
 
-        AnimatedVisibility(visible = connectionInitiated) {
-            Text(text = connectionStatus.name)
-            if (connectionStatus == ConnectionStatus.CONNECTED) {
-                navigateToDeviceFragment.invoke()
-            }
-        }
+//        LazyColumn {
+//            items(services ?: listOf()) { service ->
+//                Button(onClick = { /*TODO*/ }) {
+//                    Text(text = service.toString())
+//                }
+//            }
+//        }
+
+
     }
 }

@@ -55,6 +55,7 @@ class BleManagerImpl @Inject constructor(
                                     ConnectionStatus.CONNECTED
                                 ))
                                 bluetoothGatt = gatt
+                                discoverServices()
                             }
                             BluetoothProfile.STATE_DISCONNECTED -> {
                                 Logger.i("Disconnected")

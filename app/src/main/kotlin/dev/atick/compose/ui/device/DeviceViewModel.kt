@@ -9,7 +9,9 @@ import dev.atick.ble.data.BleCharacteristic
 import dev.atick.ble.data.BleService
 import dev.atick.ble.repository.BleManager
 import dev.atick.core.ui.BaseViewModel
+import dev.atick.core.utils.extensions.shareInDelayed
 import dev.atick.core.utils.extensions.stateInDelayed
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -25,7 +27,7 @@ class DeviceViewModel @Inject constructor(
         discoverServices()
     }
 
-    val services: StateFlow<List<BleService>> =
+    val services: SharedFlow<List<BleService>> =
         bleManager.bleCallbacks
             .filter { it is BleCallbacks.ServicesCallback }
             .map { it.data as BluetoothGatt }
@@ -46,8 +48,8 @@ class DeviceViewModel @Inject constructor(
                     }
                 }
             }
-            .stateInDelayed(
-                initialValue = listOf(),
+            .shareInDelayed(
+//                initialValue = listOf(),
                 scope = viewModelScope
             )
 
