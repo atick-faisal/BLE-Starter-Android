@@ -18,21 +18,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun DeviceScreen(
     viewModel: DeviceViewModel = viewModel()
 ) {
-    val services by viewModel.services.collectAsState(listOf())
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        LazyColumn {
-            items(services) { service ->
-                Button(onClick = { /*TODO*/ }) {
-                    Text(text = service.toString())
-                }
-            }
-        }
-        
-//        Text(text = services.toString())
-    }
+//    val services by viewModel.services.collectAsState(listOf())
+//
+//    Column(
+//        modifier = Modifier.fillMaxSize(),
+//        horizontalAlignment = Alignment.CenterHorizontally,
+//        verticalArrangement = Arrangement.Center
+//    ) {
+//        LazyColumn {
+//            items(services) { service ->
+//                Button(onClick = { /*TODO*/ }) {
+//                    Text(text = service.toString())
+//                }
+//            }
+//        }
+//
+////        Text(text = services.toString())
+//    }
 }

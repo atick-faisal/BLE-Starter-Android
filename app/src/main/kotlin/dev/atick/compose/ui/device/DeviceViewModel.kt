@@ -23,42 +23,42 @@ class DeviceViewModel @Inject constructor(
     private val bleManager: BleManager
 ) : BaseViewModel() {
 
-    init {
-        discoverServices()
-    }
-
-    val services: SharedFlow<List<BleService>> =
-        bleManager.bleCallbacks
-            .filter { it is BleCallbacks.ServicesCallback }
-            .map { it.data as BluetoothGatt }
-            .map { it.services ?: listOf() }
-            .map { serviceList ->
-                serviceList.map { service ->
-                    with(service as BluetoothGattService) {
-                        BleService(
-                            uuid = uuid.toString(),
-                            characteristics = characteristics.map { char ->
-                                BleCharacteristic(
-                                    uuid = char.uuid.toString(),
-                                    property = char.properties.toString(),
-                                    permission = char.permissions.toString()
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-            .shareInDelayed(
-//                initialValue = listOf(),
-                scope = viewModelScope
-            )
-
-//    val services: SharedFlow<BluetoothGatt> = bleManager.bleCallbacks
-//        .filter { it is BleCallbacks.ServicesCallback }
-//        .map { it.data as BluetoothGatt }
-//        .shareInDelayed(viewModelScope)
-
-    private fun discoverServices() {
-        bleManager.discoverServices()
-    }
+//    init {
+//        discoverServices()
+//    }
+//
+//    val services: SharedFlow<List<BleService>> =
+//        bleManager.bleCallbacks
+//            .filter { it is BleCallbacks.ServicesCallback }
+//            .map { it.data as BluetoothGatt }
+//            .map { it.services ?: listOf() }
+//            .map { serviceList ->
+//                serviceList.map { service ->
+//                    with(service as BluetoothGattService) {
+//                        BleService(
+//                            uuid = uuid.toString(),
+//                            characteristics = characteristics.map { char ->
+//                                BleCharacteristic(
+//                                    uuid = char.uuid.toString(),
+//                                    property = char.properties.toString(),
+//                                    permission = char.permissions.toString()
+//                                )
+//                            }
+//                        )
+//                    }
+//                }
+//            }
+//            .shareInDelayed(
+////                initialValue = listOf(),
+//                scope = viewModelScope
+//            )
+//
+////    val services: SharedFlow<BluetoothGatt> = bleManager.bleCallbacks
+////        .filter { it is BleCallbacks.ServicesCallback }
+////        .map { it.data as BluetoothGatt }
+////        .shareInDelayed(viewModelScope)
+//
+//    private fun discoverServices() {
+//        bleManager.discoverServices()
+//    }
 }

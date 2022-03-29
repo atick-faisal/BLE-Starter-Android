@@ -11,10 +11,10 @@ data class BleService(
         serviceString.append("UUID: $uuid \n")
         characteristics.forEach { char ->
             serviceString.append("\t Name: ${char.name} \n")
-            serviceString.append("\t UUID: ${char.uuid} \n")
-            serviceString.append("\t Property: ${char.property} \n")
-            serviceString.append("\t Permission: ${char.permission} \n")
-            serviceString.append("\t Value: ${char.value} \n")
+            serviceString.append("\t\t UUID: ${char.uuid} \n")
+            serviceString.append("\t\t Property: ${char.property} \n")
+            serviceString.append("\t\t Permission: ${char.permission} \n")
+            serviceString.append("\t\t Value: ${char.value} \n")
         }
 
         return serviceString.toString()

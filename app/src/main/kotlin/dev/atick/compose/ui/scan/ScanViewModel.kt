@@ -26,57 +26,57 @@ class ScanViewModel @Inject constructor(
     private val bleManager: BleManager
 ) : BaseViewModel() {
 
-    val connectionStatus: LiveData<ConnectionStatus> = bleManager.bleCallbacks
-        .filter { it is BleCallbacks.ConnectionCallback }
-        .map { it.data as ConnectionStatus }
-        .asLiveData()
-//        .shareInDelayed(viewModelScope)
-//        .stateInDelayed(
-//            initialValue = ConnectionStatus.DISCONNECTED,
-//            scope = viewModelScope
-//        )
-
-    val services: LiveData<List<BleService>> =
-        bleManager.bleCallbacks
-            .filter { it is BleCallbacks.ServicesCallback }
-            .map { it.data as BluetoothGatt }
-            .map { it.services ?: listOf() }
-            .map { serviceList ->
-                serviceList.map { service ->
-                    with(service as BluetoothGattService) {
-                        BleService(
-                            uuid = uuid.toString(),
-                            characteristics = characteristics.map { char ->
-                                BleCharacteristic(
-                                    uuid = char.uuid.toString(),
-                                    property = char.properties.toString(),
-                                    permission = char.permissions.toString()
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-            .asLiveData()
-//            .shareInDelayed(viewModelScope)
-
-    val devices: StateFlow<List<BleDevice>> =
-        bleManager.scanForDevices()
-            .map { deviceList ->
-                deviceList.map { device ->
-                    BleDevice(
-                        name = device.name ?: "Unnamed",
-                        address = device.address ?: "Can't Access"
-                    )
-                }
-            }
-            .stateInDelayed(
-                initialValue = listOf(),
-                scope = viewModelScope
-            )
-
-
-    fun connect(context: Context, deviceAddress: String) {
-        bleManager.connect(context, deviceAddress)
-    }
+//    val connectionStatus: LiveData<ConnectionStatus> = bleManager.bleCallbacks
+//        .filter { it is BleCallbacks.ConnectionCallback }
+//        .map { it.data as ConnectionStatus }
+//        .asLiveData()
+////        .shareInDelayed(viewModelScope)
+////        .stateInDelayed(
+////            initialValue = ConnectionStatus.DISCONNECTED,
+////            scope = viewModelScope
+////        )
+//
+//    val services: LiveData<List<BleService>> =
+//        bleManager.bleCallbacks
+//            .filter { it is BleCallbacks.ServicesCallback }
+//            .map { it.data as BluetoothGatt }
+//            .map { it.services ?: listOf() }
+//            .map { serviceList ->
+//                serviceList.map { service ->
+//                    with(service as BluetoothGattService) {
+//                        BleService(
+//                            uuid = uuid.toString(),
+//                            characteristics = characteristics.map { char ->
+//                                BleCharacteristic(
+//                                    uuid = char.uuid.toString(),
+//                                    property = char.properties.toString(),
+//                                    permission = char.permissions.toString()
+//                                )
+//                            }
+//                        )
+//                    }
+//                }
+//            }
+//            .asLiveData()
+////            .shareInDelayed(viewModelScope)
+//
+//    val devices: StateFlow<List<BleDevice>> =
+//        bleManager.scanForDevices()
+//            .map { deviceList ->
+//                deviceList.map { device ->
+//                    BleDevice(
+//                        name = device.name ?: "Unnamed",
+//                        address = device.address ?: "Can't Access"
+//                    )
+//                }
+//            }
+//            .stateInDelayed(
+//                initialValue = listOf(),
+//                scope = viewModelScope
+//            )
+//
+//
+//    fun connect(context: Context, deviceAddress: String) {
+//        bleManager.connect(context, deviceAddress)
+//    }
 }

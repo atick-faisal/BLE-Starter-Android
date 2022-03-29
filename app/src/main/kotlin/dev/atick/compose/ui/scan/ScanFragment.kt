@@ -26,7 +26,7 @@ class ScanFragment: BaseComposeFragment() {
     }
 
     private fun onScanResultClick(deviceAddress: String) {
-        viewModel.connect(requireActivity(), deviceAddress)
+//        viewModel.connect(requireActivity(), deviceAddress)
     }
 
 }

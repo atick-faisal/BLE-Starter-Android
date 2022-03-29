@@ -23,47 +23,47 @@ fun ScanScreen(
     navigateToDeviceFragment: () -> Unit,
     viewModel: ScanViewModel = viewModel()
 ) {
-    val devices by viewModel.devices.collectAsState()
-
-    val connectionStatus by viewModel.connectionStatus.observeAsState()
-    var connectionInitiated by remember { mutableStateOf(false) }
-//    val services by viewModel.services.observeAsState()
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        //        AnimatedVisibility(visible = connectionInitiated) {
-        Text(text = connectionStatus?.name.toString())
-//        if (connectionStatus == ConnectionStatus.CONNECTED) {
-//            navigateToDeviceFragment.invoke()
-//        }
-//        }
-
-        LazyColumn {
-            items(devices) { device ->
-                Button(
-                    onClick = {
-                        onScanResultClick(device.address)
-                        connectionInitiated = true
-                    }
-                ) {
-                    Text(text = device.name)
-                    Text(text = device.address)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-
+//    val devices by viewModel.devices.collectAsState()
+//
+//    val connectionStatus by viewModel.connectionStatus.observeAsState()
+//    var connectionInitiated by remember { mutableStateOf(false) }
+////    val services by viewModel.services.observeAsState()
+//
+//    Column(
+//        modifier = Modifier.fillMaxSize(),
+//        horizontalAlignment = Alignment.CenterHorizontally,
+//        verticalArrangement = Arrangement.Center
+//    ) {
+//        //        AnimatedVisibility(visible = connectionInitiated) {
+//        Text(text = connectionStatus?.name.toString())
+////        if (connectionStatus == ConnectionStatus.CONNECTED) {
+////            navigateToDeviceFragment.invoke()
+////        }
+////        }
+//
 //        LazyColumn {
-//            items(services ?: listOf()) { service ->
-//                Button(onClick = { /*TODO*/ }) {
-//                    Text(text = service.toString())
+//            items(devices) { device ->
+//                Button(
+//                    onClick = {
+//                        onScanResultClick(device.address)
+//                        connectionInitiated = true
+//                    }
+//                ) {
+//                    Text(text = device.name)
+//                    Text(text = device.address)
 //                }
+//                Spacer(modifier = Modifier.height(8.dp))
 //            }
 //        }
-
-
-    }
+//
+////        LazyColumn {
+////            items(services ?: listOf()) { service ->
+////                Button(onClick = { /*TODO*/ }) {
+////                    Text(text = service.toString())
+////                }
+////            }
+////        }
+//
+//
+//    }
 }

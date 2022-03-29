@@ -14,13 +14,13 @@ import androidx.compose.ui.Modifier
 fun HomeScreen(
     navigateToScanFragment: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Button(onClick = navigateToScanFragment) {
-            Text(text = "Scan for Devices")
-        }
-    }
+//    Column(
+//        modifier = Modifier.fillMaxSize(),
+//        horizontalAlignment = Alignment.CenterHorizontally,
+//        verticalArrangement = Arrangement.Center
+//    ) {
+//        Button(onClick = navigateToScanFragment) {
+//            Text(text = "Scan for Devices")
+//        }
+//    }
 }

@@ -11,6 +11,7 @@ import dev.atick.ble.data.BleDevice
 import dev.atick.ble.data.BleService
 import dev.atick.ble.data.ConnectionStatus
 import dev.atick.ble.utils.scan
+import dev.atick.ble.utils.toShortString
 import dev.atick.core.utils.extensions.toHexString
 import javax.inject.Inject
 
@@ -150,11 +151,11 @@ class BleManagerImpl @Inject constructor(
                         onServiceDiscovered(
                             serviceList.map { service ->
                                 BleService(
-                                    uuid = service.uuid.toString(),
+                                    uuid = service.uuid.toShortString(),
                                     characteristics =
                                     service.characteristics?.map { char->
                                         BleCharacteristic(
-                                            uuid = char.uuid.toString(),
+                                            uuid = char.uuid.toShortString(),
                                             property = char.properties.toString(),
                                             permission = char.permissions.toString(),
                                             value = char.value?.toHexString()
