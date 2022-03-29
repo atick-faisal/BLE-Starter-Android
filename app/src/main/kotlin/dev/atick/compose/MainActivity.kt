@@ -137,6 +137,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
                             viewModel.connect(context, device.address)
+                            viewModel.stopScan()
                         }) {
                         Text(text = "${device.name} \n ${device.address}")
                     }

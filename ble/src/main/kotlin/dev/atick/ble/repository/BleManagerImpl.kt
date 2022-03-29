@@ -6,10 +6,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import com.orhanobut.logger.Logger
-import dev.atick.ble.data.BleCharacteristic
-import dev.atick.ble.data.BleDevice
-import dev.atick.ble.data.BleService
-import dev.atick.ble.data.ConnectionStatus
+import dev.atick.ble.data.*
 import dev.atick.ble.utils.scan
 import dev.atick.ble.utils.toShortString
 import dev.atick.core.utils.extensions.toHexString
@@ -118,7 +115,7 @@ class BleManagerImpl @Inject constructor(
             ) {
                 super.onConnectionStateChange(gatt, status, newState)
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    when(newState) {
+                    when (newState) {
                         BluetoothProfile.STATE_CONNECTING -> {
                             Logger.i("Connecting ...")
                             onConnectionChange(ConnectionStatus.CONNECTING)
@@ -137,6 +134,8 @@ class BleManagerImpl @Inject constructor(
                             onConnectionChange(ConnectionStatus.DISCONNECTED)
                         }
                     }
+                } else {
+                    Logger.e("Connection Failed!")
                 }
             }
 
@@ -153,12 +152,18 @@ class BleManagerImpl @Inject constructor(
                                 BleService(
                                     uuid = service.uuid.toShortString(),
                                     characteristics =
-                                    service.characteristics?.map { char->
+                                    service.characteristics?.map { char ->
                                         BleCharacteristic(
                                             uuid = char.uuid.toShortString(),
                                             property = char.properties.toString(),
                                             permission = char.permissions.toString(),
-                                            value = char.value?.toHexString()
+                                            value = char.value?.toHexString(),
+                                            descriptors = char.descriptors?.map { descriptor ->
+                                                BleDescriptor(
+                                                    uuid = descriptor.uuid.toShortString(),
+                                                    value = descriptor.value?.toHexString()
+                                                )
+                                            } ?: listOf()
                                         )
                                     } ?: listOf()
 
