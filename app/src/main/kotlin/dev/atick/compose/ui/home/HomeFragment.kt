@@ -1,7 +1,6 @@
 package dev.atick.compose.ui.home
 
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
