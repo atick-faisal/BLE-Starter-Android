@@ -18,6 +18,7 @@ import dev.atick.ble.data.ConnectionStatus
 @Composable
 @SuppressLint("MissingPermission")
 fun ScanScreen(
+    onScanResultClick: (String) -> Unit,
     navigateToDeviceFragment: () -> Unit,
     viewModel: ScanViewModel = viewModel()
 ) {
@@ -34,7 +35,7 @@ fun ScanScreen(
             items(devices) { device ->
                 Button(
                     onClick = {
-                        viewModel.connect(context, device.address)
+                        onScanResultClick(device.address)
                         connectionInitiated = true
                     }
                 ) {

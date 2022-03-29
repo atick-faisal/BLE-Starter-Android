@@ -8,6 +8,7 @@ import android.bluetooth.le.ScanSettings
 import android.content.Context
 import com.orhanobut.logger.Logger
 import dev.atick.ble.data.ConnectionStatus
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -66,8 +67,8 @@ class BleManagerImpl @Inject constructor(
     override fun connect(
         context: Context,
         deviceAddress: String
-    ): Flow<ConnectionStatus> =
-        callbackFlow {
+    ): Flow<ConnectionStatus> {
+        return callbackFlow {
             val connectionCallback = object : BluetoothGattCallback() {
                 override fun onConnectionStateChange(
                     gatt: BluetoothGatt?,
@@ -79,29 +80,32 @@ class BleManagerImpl @Inject constructor(
                             BluetoothProfile.STATE_CONNECTING -> {
                                 Logger.i("Connecting")
                                 trySend(ConnectionStatus.CONNECTING)
-                                bluetoothGatt = gatt
                             }
                             BluetoothProfile.STATE_CONNECTED -> {
                                 Logger.i("Connected")
                                 trySend(ConnectionStatus.CONNECTED)
+                                bluetoothGatt = gatt
                             }
                             BluetoothProfile.STATE_DISCONNECTED -> {
                                 Logger.i("Disconnected")
                                 trySend(ConnectionStatus.DISCONNECTED)
                                 gatt?.close()
+                                cancel()
                             }
                         }
                     } else {
-                        Logger.i("Failed to Connect")
+                        Logger.e("Failed to Connect")
                         trySend(ConnectionStatus.DISCONNECTED)
                         gatt?.close()
+                        cancel()
                     }
                 }
             }
 
+            Logger.i("Connecting ... ")
             scanResults.forEach {
                 if (deviceAddress == it.address) {
-                    Logger.i("Connecting ... ")
+
                     it.connectGatt(context, false, connectionCallback)
                 }
             }
@@ -110,6 +114,34 @@ class BleManagerImpl @Inject constructor(
                 bluetoothGatt?.close()
             }
         }
+    }
+
+
+    override fun discoverServices(): Flow<List<BluetoothGattService>> {
+        return callbackFlow {
+            object: BluetoothGattCallback() {
+                override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+                    Logger.i("Size : ${gatt?.services?.size}")
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+                        bluetoothGatt?.let {
+                            trySend(it.services ?: listOf())
+                        }
+                    }
+                    else {
+                        Logger.e("Service Discovery Failed")
+                        bluetoothGatt?.close()
+                    }
+                }
+            }
+
+            Logger.i("Discovering Services $bluetoothGatt")
+            bluetoothGatt?.discoverServices()
+
+            awaitClose {
+                bluetoothGatt?.close()
+            }
+        }
+    }
 
 
     override fun stopScan() {
