@@ -44,7 +44,8 @@ class BleUtilsImpl @Inject constructor(
 
     override fun isAllPermissionsProvided(activity: ComponentActivity): Boolean {
         return isBluetoothPermissionGranted(activity) &&
-            isLocationPermissionGranted(activity)
+            isLocationPermissionGranted(activity) &&
+            bluetoothAdapter?.isEnabled ?: false
     }
 
     override fun setupBluetooth(activity: ComponentActivity) {
