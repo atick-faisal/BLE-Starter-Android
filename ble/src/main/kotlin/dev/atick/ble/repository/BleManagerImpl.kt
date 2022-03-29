@@ -65,7 +65,7 @@ class BleManagerImpl @Inject constructor(
 
     override fun connect(
         context: Context,
-        device: BluetoothDevice
+        deviceAddress: String
     ): Flow<ConnectionStatus> =
         callbackFlow {
             val connectionCallback = object : BluetoothGattCallback() {
@@ -99,7 +99,12 @@ class BleManagerImpl @Inject constructor(
                 }
             }
 
-            device.connectGatt(context, false, connectionCallback)
+            scanResults.forEach {
+                if (deviceAddress == it.address) {
+                    Logger.i("Connecting ... ")
+                    it.connectGatt(context, false, connectionCallback)
+                }
+            }
 
             awaitClose {
                 bluetoothGatt?.close()

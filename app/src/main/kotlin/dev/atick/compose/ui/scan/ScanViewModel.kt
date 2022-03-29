@@ -2,6 +2,7 @@ package dev.atick.compose.ui.scan
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
+import android.content.Context
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.atick.ble.data.BleDevice
@@ -17,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 @SuppressLint("MissingPermission")
 class ScanViewModel @Inject constructor(
-    bleManager: BleManager
+    private val bleManager: BleManager
 ) : BaseViewModel() {
 
     val devices: StateFlow<List<BleDevice>> =
@@ -31,8 +32,12 @@ class ScanViewModel @Inject constructor(
                 }
             }
             .stateInDelayed(
-                initialValue = listOf<BleDevice>(),
+                initialValue = listOf(),
                 scope = viewModelScope
             )
 
+
+    fun connect(context: Context, deviceAddress: String) {
+        bleManager.connect(context, deviceAddress)
+    }
 }
