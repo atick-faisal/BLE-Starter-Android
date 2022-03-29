@@ -1,21 +1,18 @@
 package dev.atick.compose.ui.scan
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.content.Context
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.atick.ble.data.BleCallbacks
 import dev.atick.ble.data.BleDevice
 import dev.atick.ble.data.ConnectionStatus
 import dev.atick.ble.repository.BleManager
 import dev.atick.core.ui.BaseViewModel
 import dev.atick.core.utils.extensions.stateInDelayed
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -25,7 +22,14 @@ class ScanViewModel @Inject constructor(
     private val bleManager: BleManager
 ) : BaseViewModel() {
 
-    lateinit var connectionStatus: StateFlow<ConnectionStatus>
+    val connectionStatus: StateFlow<ConnectionStatus>
+    = bleManager.bleCallbacks
+        .filter { it is BleCallbacks.ConnectionCallback }
+        .map { it.data as ConnectionStatus }
+        .stateInDelayed(
+            initialValue = ConnectionStatus.DISCONNECTED,
+            scope = viewModelScope
+        )
 
     val devices: StateFlow<List<BleDevice>> =
         bleManager.scanForDevices()
@@ -44,10 +48,6 @@ class ScanViewModel @Inject constructor(
 
 
     fun connect(context: Context, deviceAddress: String) {
-        connectionStatus = bleManager.connect(context, deviceAddress)
-            .stateInDelayed(
-                initialValue = ConnectionStatus.DISCONNECTED,
-                scope = viewModelScope
-            )
+        bleManager.connect(context, deviceAddress)
     }
 }

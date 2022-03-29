@@ -22,8 +22,8 @@ fun ScanScreen(
     navigateToDeviceFragment: () -> Unit,
     viewModel: ScanViewModel = viewModel()
 ) {
-    val context = LocalContext.current
     val devices by viewModel.devices.collectAsState()
+    val connectionStatus by viewModel.connectionStatus.collectAsState()
     var connectionInitiated by remember { mutableStateOf(false) }
 
     Column(
@@ -47,7 +47,6 @@ fun ScanScreen(
         }
 
         AnimatedVisibility(visible = connectionInitiated) {
-            val connectionStatus by viewModel.connectionStatus.collectAsState()
             Text(text = connectionStatus.name)
             if (connectionStatus == ConnectionStatus.CONNECTED) {
                 navigateToDeviceFragment.invoke()
