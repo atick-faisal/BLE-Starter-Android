@@ -7,5 +7,13 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="dev.atick.compose.ui.home.HomeFragment"
-        android:label="HomeFragment" />
+        android:label="HomeFragment" >
+        <action
+            android:id="@+id/action_homeFragment_to_scanFragment"
+            app:destination="@id/scanFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/scanFragment"
+        android:name="dev.atick.compose.ui.scan.ScanFragment"
+        android:label="ScanFragment" />
 </navigation>
