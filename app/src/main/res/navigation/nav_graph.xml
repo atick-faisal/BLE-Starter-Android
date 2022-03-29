@@ -15,5 +15,13 @@
     <fragment
         android:id="@+id/scanFragment"
         android:name="dev.atick.compose.ui.scan.ScanFragment"
-        android:label="ScanFragment" />
+        android:label="ScanFragment" >
+        <action
+            android:id="@+id/action_scanFragment_to_deviceFragment"
+            app:destination="@id/deviceFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/deviceFragment"
+        android:name="dev.atick.compose.ui.device.DeviceFragment"
+        android:label="DeviceFragment" />
 </navigation>
