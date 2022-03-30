@@ -7,12 +7,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -21,22 +18,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.orhanobut.logger.Logger
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.atick.ble.data.BleCharacteristic
 import dev.atick.ble.data.BleDevice
 import dev.atick.ble.data.BleService
 import dev.atick.ble.data.ConnectionStatus
 import dev.atick.ble.repository.BleManager
 import dev.atick.ble.utils.BleUtils
-import javax.inject.Inject
-import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.atick.ble.data.BleCharacteristic
 import dev.atick.core.ui.BaseViewModel
 import dev.atick.core.utils.Event
 import dev.atick.core.utils.extensions.observeEvent
 import dev.atick.core.utils.extensions.showToast
+import javax.inject.Inject
 
 @AndroidEntryPoint
 @SuppressLint("MissingPermission")

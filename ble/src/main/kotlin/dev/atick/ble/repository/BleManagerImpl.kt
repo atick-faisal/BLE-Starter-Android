@@ -12,7 +12,6 @@ import dev.atick.core.utils.extensions.toHexString
 import java.util.*
 import javax.inject.Inject
 
-
 @SuppressLint("MissingPermission")
 @kotlinx.coroutines.ExperimentalCoroutinesApi
 class BleManagerImpl @Inject constructor(

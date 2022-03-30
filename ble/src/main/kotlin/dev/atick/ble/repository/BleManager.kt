@@ -17,7 +17,7 @@ interface BleManager {
         onServiceDiscovered: (List<BleService>) -> Unit,
         onCharacteristicRead: (BleCharacteristic) -> Unit,
         onCharacteristicChange: (BleCharacteristic) -> Unit,
-        onCharacteristicWrite: (BleCharacteristic) -> Unit
+        onCharacteristicWrite: (BleCharacteristic) -> Unit = {}
     )
 
     fun startScan()
