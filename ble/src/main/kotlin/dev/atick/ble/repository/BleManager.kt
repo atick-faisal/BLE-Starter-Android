@@ -15,13 +15,15 @@ interface BleManager {
         onDeviceFound: (BleDevice) -> Unit,
         onConnectionChange: (ConnectionStatus) -> Unit,
         onServiceDiscovered: (List<BleService>) -> Unit,
-        onCharacteristicRead: (BleCharacteristic) -> Unit
+        onCharacteristicRead: (BleCharacteristic) -> Unit,
+        onCharacteristicChange: (BleCharacteristic) -> Unit,
     )
 
     fun startScan()
     fun connect(context: Context, address: String)
     fun discoverServices()
     fun readCharacteristic(serviceUuid: String, charUuid: String)
+    fun enableNotification(serviceUuid: String, charUuid: String)
     fun stopScan()
 
     /////////////////////////////////////////////////////////

@@ -7,10 +7,7 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import com.orhanobut.logger.Logger
 import dev.atick.ble.data.*
-import dev.atick.ble.utils.getName
-import dev.atick.ble.utils.isReadable
-import dev.atick.ble.utils.scan
-import dev.atick.ble.utils.toShortString
+import dev.atick.ble.utils.*
 import dev.atick.core.utils.extensions.toHexString
 import java.util.*
 import javax.inject.Inject
@@ -21,6 +18,10 @@ import javax.inject.Inject
 class BleManagerImpl @Inject constructor(
     bluetoothAdapter: BluetoothAdapter?,
 ) : BleManager {
+
+    companion object {
+        const val CCCD_UUID = "00002902-0000-1000-8000-00805f9b34fb"
+    }
 
     private val bleScanner = bluetoothAdapter?.bluetoothLeScanner
     private lateinit var scanCallback: ScanCallback
@@ -46,6 +47,7 @@ class BleManagerImpl @Inject constructor(
 
     override fun discoverServices() {
         bluetoothGatt?.discoverServices()
+            ?: error("Not connected to a BLE device!")
     }
 
     override fun readCharacteristic(serviceUuid: String, charUuid: String) {
@@ -57,7 +59,41 @@ class BleManagerImpl @Inject constructor(
                 if (char.isReadable())
                     gatt.readCharacteristic(char)
             }
-        }
+        } ?: error("Not connected to a BLE device!")
+    }
+
+    override fun enableNotification(serviceUuid: String, charUuid: String) {
+        val cccdUuid = UUID.fromString(CCCD_UUID)
+        bluetoothGatt?.let { gatt ->
+            val characteristic = gatt
+                .getService(UUID.fromString(serviceUuid))
+                ?.getCharacteristic(UUID.fromString(charUuid))
+            characteristic?.let { char ->
+                val payload = when {
+                    char.isIndicatable() ->
+                        BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+                    char.isNotifiable() ->
+                        BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                    else -> {
+                        Logger.e("Can't Enable Notification!")
+                        return
+                    }
+                }
+
+                Logger.w("Enabling Notification ... ")
+                char.getDescriptor(cccdUuid)?.let { cccDescriptor ->
+                    if (bluetoothGatt?.setCharacteristicNotification(
+                            characteristic,
+                            true
+                        ) == false
+                    ) {
+                        Logger.e("Enabling Notification Failed!")
+                        return
+                    }
+                    writeDescriptor(cccDescriptor, payload)
+                } ?: Logger.e("${char.uuid}: CCCD Not Found!")
+            }
+        } ?: error("Not connected to a BLE device!")
     }
 
     override fun stopScan() {
@@ -68,7 +104,8 @@ class BleManagerImpl @Inject constructor(
         onDeviceFound: (BleDevice) -> Unit,
         onConnectionChange: (ConnectionStatus) -> Unit,
         onServiceDiscovered: (List<BleService>) -> Unit,
-        onCharacteristicRead: (BleCharacteristic) -> Unit
+        onCharacteristicRead: (BleCharacteristic) -> Unit,
+        onCharacteristicChange: (BleCharacteristic) -> Unit,
     ) {
         scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
@@ -240,7 +277,22 @@ class BleManagerImpl @Inject constructor(
                 characteristic: BluetoothGattCharacteristic?
             ) {
                 super.onCharacteristicChanged(gatt, characteristic)
-                Logger.i("Characteristic Changed")
+                Logger.i("Value: ${characteristic?.value?.toHexString()}")
+                characteristic?.let { char ->
+                    val bleCharacteristic = BleCharacteristic(
+                        uuid = char.uuid.toShortString(),
+                        property = char.properties.toString(),
+                        permission = char.permissions.toString(),
+                        value = char.value?.toHexString(),
+                        descriptors = char.descriptors?.map { descriptor ->
+                            BleDescriptor(
+                                uuid = descriptor.uuid.toShortString(),
+                                value = descriptor.value?.toHexString()
+                            )
+                        } ?: listOf()
+                    )
+                    onCharacteristicChange(bleCharacteristic)
+                }
             }
 
             override fun onDescriptorRead(
@@ -300,6 +352,16 @@ class BleManagerImpl @Inject constructor(
             }
 
         }
+    }
+
+    private fun writeDescriptor(
+        descriptor: BluetoothGattDescriptor,
+        payload: ByteArray
+    ) {
+        bluetoothGatt?.let { gatt ->
+            descriptor.value = payload
+            gatt.writeDescriptor(descriptor)
+        } ?: error("Not connected to a BLE device!")
     }
 
 

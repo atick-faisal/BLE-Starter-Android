@@ -77,6 +77,9 @@ class MainViewModel @Inject constructor(
     companion object {
         const val BATTERY_SERVICE_UUID = "0000180f-0000-1000-8000-00805f9b34fb"
         const val BATTERY_LEVEL_UUID = "00002a19-0000-1000-8000-00805f9b34fb"
+
+        const val HEART_RATE_SERVICE_UUID = "0000180d-0000-1000-8000-00805f9b34fb"
+        const val HEART_RATE_UUID = "00002a37-0000-1000-8000-00805f9b34fb"
     }
 
 
@@ -91,7 +94,8 @@ class MainViewModel @Inject constructor(
             onDeviceFound = ::onDeviceFound,
             onConnectionChange = ::onConnectionChange,
             onServiceDiscovered = ::onServiceDiscovered,
-            onCharacteristicRead = ::onCharacteristicRead
+            onCharacteristicRead = ::onCharacteristicRead,
+            onCharacteristicChange = ::onCharacteristicChange
         )
     }
 
@@ -115,6 +119,14 @@ class MainViewModel @Inject constructor(
         bleManager.readCharacteristic(serviceUuid, charUuid)
     }
 
+    fun enableNotification(
+        serviceUuid: String = HEART_RATE_SERVICE_UUID,
+        charUuid: String = HEART_RATE_UUID
+    ) {
+        Logger.i("Reading ... ")
+        bleManager.enableNotification(serviceUuid, charUuid)
+    }
+
     fun stopScan() {
         bleManager.stopScan()
     }
@@ -135,6 +147,11 @@ class MainViewModel @Inject constructor(
     }
 
     private fun onCharacteristicRead(char: BleCharacteristic) {
+        toastMessage.postValue(Event(char.value ?: "null"))
+        Logger.i("Value: ${char.uuid} -> ${char.value}")
+    }
+
+    private fun onCharacteristicChange(char: BleCharacteristic) {
         toastMessage.postValue(Event(char.value ?: "null"))
         Logger.i("Value: ${char.uuid} -> ${char.value}")
     }
@@ -179,11 +196,27 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
         }
 
         AnimatedVisibility(visible = viewModel.isConnected) {
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { viewModel.discoverServices() }
-            ) {
-                Text(text = "Discover Services")
+            Column {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { viewModel.discoverServices() }
+                ) {
+                    Text(text = "Discover Services")
+                }
+
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { viewModel.readCharacteristic() }
+                ) {
+                    Text(text = "Read Battery Level")
+                }
+
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { viewModel.enableNotification() }
+                ) {
+                    Text(text = "Enable Heart Rate Notification")
+                }
             }
         }
 
@@ -191,7 +224,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
             items(viewModel.bleServices) { service ->
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { viewModel.readCharacteristic() }
+                    onClick = { }
                 ) {
                     Text(text = service.toString())
                 }
