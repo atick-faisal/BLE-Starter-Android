@@ -1,15 +1,18 @@
 package dev.atick.ble.repository
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import dev.atick.ble.data.BleCharacteristic
 import dev.atick.ble.data.BleDevice
 import dev.atick.ble.data.BleService
 import dev.atick.ble.data.ConnectionStatus
-import java.util.*
+import dev.atick.core.utils.Event
 
 interface BleManager {
 
     /////////////////////////////////////////////////////////
+
+    val loading: LiveData<Event<Boolean>>
 
     fun setBleCallbacks(
         onDeviceFound: (BleDevice) -> Unit,

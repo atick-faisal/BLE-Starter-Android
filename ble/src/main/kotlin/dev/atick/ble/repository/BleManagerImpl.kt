@@ -5,9 +5,12 @@ import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.orhanobut.logger.Logger
 import dev.atick.ble.data.*
 import dev.atick.ble.utils.*
+import dev.atick.core.utils.Event
 import dev.atick.core.utils.extensions.toHexString
 import java.util.*
 import javax.inject.Inject
@@ -28,13 +31,20 @@ class BleManagerImpl @Inject constructor(
     private val scanResults = mutableListOf<BluetoothDevice>()
     private var bluetoothGatt: BluetoothGatt? = null
 
+    private val _loading = MutableLiveData<Event<Boolean>>()
+    override val loading: LiveData<Event<Boolean>>
+        get() = _loading
+
     override fun startScan() {
+        Logger.w("Starting Scan ... ")
         bleScanner?.scan(scanCallback)
     }
 
     override fun connect(context: Context, address: String) {
         scanResults.forEach { scanResult ->
             if (address == scanResult.address) {
+                _loading.postValue(Event(true))
+                Logger.w("Connecting ... ")
                 scanResult.connectGatt(
                     context,
                     false,
@@ -45,8 +55,10 @@ class BleManagerImpl @Inject constructor(
     }
 
     override fun discoverServices() {
+        _loading.postValue(Event(true))
+        Logger.w("Discovering Services ... ")
         bluetoothGatt?.discoverServices()
-            ?: error("Not connected to a BLE device!")
+            ?: Logger.e("Not connected to a BLE device!")
     }
 
     override fun readCharacteristic(serviceUuid: String, charUuid: String) {
@@ -57,9 +69,10 @@ class BleManagerImpl @Inject constructor(
                 ?.getCharacteristic(UUID.fromString(charUuid))
             characteristic?.let { char ->
                 if (char.isReadable())
-                    gatt.readCharacteristic(char)
+                    _loading.postValue(Event(true))
+                gatt.readCharacteristic(char)
             }
-        } ?: error("Not connected to a BLE device!")
+        } ?: Logger.e("Not connected to a BLE device!")
     }
 
     override fun writeCharacteristic(
@@ -78,14 +91,17 @@ class BleManagerImpl @Inject constructor(
                         BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
                     char.isWritableWithoutResponse() ->
                         BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                    else ->
-                        error("Can not Write to Characteristic")
+                    else -> {
+                        Logger.e("Can not Write to Characteristic")
+                        return
+                    }
                 }
                 characteristic.writeType = writeType
                 characteristic.value = payload
                 gatt.writeCharacteristic(characteristic)
+                _loading.postValue(Event(true))
             }
-        } ?: error("Not connected to a BLE device!")
+        } ?: Logger.e("Not connected to a BLE device!")
     }
 
     override fun enableNotification(serviceUuid: String, charUuid: String) {
@@ -119,7 +135,7 @@ class BleManagerImpl @Inject constructor(
                     writeDescriptor(cccDescriptor, payload)
                 } ?: Logger.e("${char.uuid}: CCCD Not Found!")
             }
-        } ?: error("Not connected to a BLE device!")
+        } ?: Logger.e("Not connected to a BLE device!")
     }
 
     override fun disableNotification(serviceUuid: String, charUuid: String) {
@@ -148,10 +164,11 @@ class BleManagerImpl @Inject constructor(
                     )
                 } ?: Logger.e("${char.uuid}: CCCD Not Found!")
             }
-        } ?: error("Not connected to a BLE device!")
+        } ?: Logger.e("Not connected to a BLE device!")
     }
 
     override fun stopScan() {
+        Logger.w("Stopping Scan ... ")
         bleScanner?.stopScan(scanCallback)
     }
 
@@ -165,6 +182,7 @@ class BleManagerImpl @Inject constructor(
     ) {
         scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
+                _loading.postValue(Event(false))
                 result?.let { scanResult ->
                     // ... Required for RSSI update
                     val indexQuery = scanResults.indexOfFirst { device ->
@@ -189,6 +207,7 @@ class BleManagerImpl @Inject constructor(
             }
 
             override fun onScanFailed(errorCode: Int) {
+                _loading.postValue(Event(false))
                 Logger.e("Scan Failed!")
             }
         }
@@ -200,7 +219,6 @@ class BleManagerImpl @Inject constructor(
                 rxPhy: Int,
                 status: Int
             ) {
-                super.onPhyUpdate(gatt, txPhy, rxPhy, status)
                 if (status == BluetoothGatt.GATT_SUCCESS)
                     Logger.i("Phy Update: Tx = $txPhy, Rx = $rxPhy")
             }
@@ -211,7 +229,6 @@ class BleManagerImpl @Inject constructor(
                 rxPhy: Int,
                 status: Int
             ) {
-                super.onPhyRead(gatt, txPhy, rxPhy, status)
                 if (status == BluetoothGatt.GATT_SUCCESS)
                     Logger.i("Phy Read: Tx = $txPhy, Rx = $rxPhy")
             }
@@ -221,7 +238,7 @@ class BleManagerImpl @Inject constructor(
                 status: Int,
                 newState: Int
             ) {
-                super.onConnectionStateChange(gatt, status, newState)
+                _loading.postValue(Event(false))
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     when (newState) {
                         BluetoothProfile.STATE_CONNECTING -> {
@@ -251,7 +268,7 @@ class BleManagerImpl @Inject constructor(
                 gatt: BluetoothGatt?,
                 status: Int
             ) {
-                super.onServicesDiscovered(gatt, status)
+                _loading.postValue(Event(false))
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     Logger.i("${gatt?.services?.size} Services Discovered")
                     gatt?.services?.let { serviceList ->
@@ -269,7 +286,7 @@ class BleManagerImpl @Inject constructor(
                 characteristic: BluetoothGattCharacteristic?,
                 status: Int
             ) {
-                super.onCharacteristicRead(gatt, characteristic, status)
+                _loading.postValue(Event(false))
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
                         Logger.i(
@@ -291,7 +308,7 @@ class BleManagerImpl @Inject constructor(
                 characteristic: BluetoothGattCharacteristic?,
                 status: Int
             ) {
-                super.onCharacteristicWrite(gatt, characteristic, status)
+                _loading.postValue(Event(false))
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
                         Logger.i("Characteristic Written")
@@ -315,7 +332,7 @@ class BleManagerImpl @Inject constructor(
                 gatt: BluetoothGatt?,
                 characteristic: BluetoothGattCharacteristic?
             ) {
-                super.onCharacteristicChanged(gatt, characteristic)
+                _loading.postValue(Event(false))
                 Logger.i("Value: ${characteristic?.value?.toHexString()}")
                 characteristic?.let { char ->
                     onCharacteristicChange(char.simplify())
@@ -337,7 +354,7 @@ class BleManagerImpl @Inject constructor(
                 descriptor: BluetoothGattDescriptor?,
                 status: Int
             ) {
-                super.onDescriptorWrite(gatt, descriptor, status)
+                _loading.postValue(Event(false))
                 if (status == BluetoothGatt.GATT_SUCCESS)
                     Logger.i("Descriptor Written")
             }
@@ -388,6 +405,7 @@ class BleManagerImpl @Inject constructor(
         bluetoothGatt?.let { gatt ->
             descriptor.value = payload
             gatt.writeDescriptor(descriptor)
-        } ?: error("Not connected to a BLE device!")
+            _loading.postValue(Event(true))
+        } ?: Logger.e("Not connected to a BLE device!")
     }
 }

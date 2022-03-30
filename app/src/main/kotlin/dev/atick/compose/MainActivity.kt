@@ -14,10 +14,14 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.orhanobut.logger.Logger
 import dagger.hilt.android.AndroidEntryPoint
@@ -83,6 +87,10 @@ class MainViewModel @Inject constructor(
     val bleServices = mutableStateListOf<BleService>()
     var connectionStatus by mutableStateOf(ConnectionStatus.DISCONNECTED)
     var isConnected by mutableStateOf(false)
+    val loading: LiveData<Boolean>
+        get() = bleManager.loading.map {
+            it.peekContent()
+        }
 
 
     init {
@@ -161,14 +169,17 @@ class MainViewModel @Inject constructor(
 
 @Composable
 fun MainScreen(viewModel: MainViewModel = viewModel()) {
+    val context = LocalContext.current
+    val loading by viewModel.loading.observeAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp),
+            .padding(8.dp)
+            .alpha(if (loading == true) 0.1F else 1.0F),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        val context = LocalContext.current
 
         Text(text = viewModel.connectionStatus.name)
 
