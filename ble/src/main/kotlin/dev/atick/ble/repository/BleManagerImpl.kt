@@ -7,9 +7,12 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import com.orhanobut.logger.Logger
 import dev.atick.ble.data.*
+import dev.atick.ble.utils.getName
+import dev.atick.ble.utils.isReadable
 import dev.atick.ble.utils.scan
 import dev.atick.ble.utils.toShortString
 import dev.atick.core.utils.extensions.toHexString
+import java.util.*
 import javax.inject.Inject
 
 
@@ -45,6 +48,18 @@ class BleManagerImpl @Inject constructor(
         bluetoothGatt?.discoverServices()
     }
 
+    override fun readCharacteristic(serviceUuid: String, charUuid: String) {
+        bluetoothGatt?.let { gatt ->
+            val characteristic = gatt
+                .getService(UUID.fromString(serviceUuid))
+                ?.getCharacteristic(UUID.fromString(charUuid))
+            characteristic?.let { char ->
+                if (char.isReadable())
+                    gatt.readCharacteristic(char)
+            }
+        }
+    }
+
     override fun stopScan() {
         bleScanner?.stopScan(scanCallback)
     }
@@ -52,7 +67,8 @@ class BleManagerImpl @Inject constructor(
     override fun setBleCallbacks(
         onDeviceFound: (BleDevice) -> Unit,
         onConnectionChange: (ConnectionStatus) -> Unit,
-        onServiceDiscovered: (List<BleService>) -> Unit
+        onServiceDiscovered: (List<BleService>) -> Unit,
+        onCharacteristicRead: (BleCharacteristic) -> Unit
     ) {
         scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
@@ -150,6 +166,7 @@ class BleManagerImpl @Inject constructor(
                         onServiceDiscovered(
                             serviceList.map { service ->
                                 BleService(
+                                    name = service.uuid.getName(),
                                     uuid = service.uuid.toShortString(),
                                     characteristics =
                                     service.characteristics?.map { char ->
@@ -180,10 +197,32 @@ class BleManagerImpl @Inject constructor(
                 status: Int
             ) {
                 super.onCharacteristicRead(gatt, characteristic, status)
-                if (status == BluetoothGatt.GATT_SUCCESS)
-                    Logger.i(
-                        "Value: ${characteristic?.value?.toHexString()}"
-                    )
+                when (status) {
+                    BluetoothGatt.GATT_SUCCESS -> {
+                        Logger.i(
+                            "Value: ${characteristic?.value?.toHexString()}"
+                        )
+                        characteristic?.let { char ->
+                            val bleCharacteristic = BleCharacteristic(
+                                uuid = char.uuid.toShortString(),
+                                property = char.properties.toString(),
+                                permission = char.permissions.toString(),
+                                value = char.value?.toHexString(),
+                                descriptors = char.descriptors?.map { descriptor ->
+                                    BleDescriptor(
+                                        uuid = descriptor.uuid.toShortString(),
+                                        value = descriptor.value?.toHexString()
+                                    )
+                                } ?: listOf()
+                            )
+                            onCharacteristicRead(bleCharacteristic)
+                        }
+                    }
+                    BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
+                        Logger.e("Read not Permitted!")
+                    }
+                    else -> Logger.e("Read Failed!")
+                }
             }
 
             override fun onCharacteristicWrite(

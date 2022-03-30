@@ -16,10 +16,6 @@ fun BluetoothLeScanner.scan(scanCallback: ScanCallback) {
     startScan(null, scanSettings, scanCallback)
 }
 
-fun UUID.toShortString(): String {
-    return toString().subSequence(0, 8).toString()
-}
-
 fun BluetoothGattCharacteristic.isReadable(): Boolean =
     containsProperty(BluetoothGattCharacteristic.PROPERTY_READ)
 

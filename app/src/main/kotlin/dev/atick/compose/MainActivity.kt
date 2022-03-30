@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
@@ -31,6 +32,11 @@ import dev.atick.ble.repository.BleManager
 import dev.atick.ble.utils.BleUtils
 import javax.inject.Inject
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.atick.ble.data.BleCharacteristic
+import dev.atick.core.ui.BaseViewModel
+import dev.atick.core.utils.Event
+import dev.atick.core.utils.extensions.observeEvent
+import dev.atick.core.utils.extensions.showToast
 
 @AndroidEntryPoint
 @SuppressLint("MissingPermission")
@@ -38,6 +44,7 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var bleUtils: BleUtils
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +57,10 @@ class MainActivity : ComponentActivity() {
         bleUtils.initialize(this) {
             Logger.i("Bluetooth Setup Successful!")
         }
+
+        observeEvent(viewModel.toastMessage) { message ->
+            showToast(message)
+        }
     }
 
     override fun onResume() {
@@ -61,7 +72,14 @@ class MainActivity : ComponentActivity() {
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val bleManager: BleManager
-) : ViewModel() {
+) : BaseViewModel() {
+
+    companion object {
+        const val BATTERY_SERVICE_UUID = "0000180f-0000-1000-8000-00805f9b34fb"
+        const val BATTERY_LEVEL_UUID = "00002a19-0000-1000-8000-00805f9b34fb"
+    }
+
+
     val devices = mutableStateListOf<BleDevice>()
     val bleServices = mutableStateListOf<BleService>()
     var connectionStatus by mutableStateOf(ConnectionStatus.DISCONNECTED)
@@ -72,7 +90,8 @@ class MainViewModel @Inject constructor(
         bleManager.setBleCallbacks(
             onDeviceFound = ::onDeviceFound,
             onConnectionChange = ::onConnectionChange,
-            onServiceDiscovered = ::onServiceDiscovered
+            onServiceDiscovered = ::onServiceDiscovered,
+            onCharacteristicRead = ::onCharacteristicRead
         )
     }
 
@@ -86,6 +105,14 @@ class MainViewModel @Inject constructor(
 
     fun discoverServices() {
         bleManager.discoverServices()
+    }
+
+    fun readCharacteristic(
+        serviceUuid: String = BATTERY_SERVICE_UUID,
+        charUuid: String = BATTERY_LEVEL_UUID
+    ) {
+        Logger.i("Reading ... ")
+        bleManager.readCharacteristic(serviceUuid, charUuid)
     }
 
     fun stopScan() {
@@ -105,6 +132,11 @@ class MainViewModel @Inject constructor(
         services.forEach { service ->
             bleServices.add(service)
         }
+    }
+
+    private fun onCharacteristicRead(char: BleCharacteristic) {
+        toastMessage.postValue(Event(char.value ?: "null"))
+        Logger.i("Value: ${char.uuid} -> ${char.value}")
     }
 
 }
@@ -159,7 +191,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
             items(viewModel.bleServices) { service ->
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {}
+                    onClick = { viewModel.readCharacteristic() }
                 ) {
                     Text(text = service.toString())
                 }
