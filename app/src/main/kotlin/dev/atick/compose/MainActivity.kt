@@ -38,6 +38,8 @@ import dev.atick.core.utils.extensions.observeEvent
 import dev.atick.core.utils.extensions.showToast
 import javax.inject.Inject
 
+/////////////////////////////////// ACTIVITY \\\\\\\\\\\\\\\\\\\\\\\\\\
+
 @AndroidEntryPoint
 @SuppressLint("MissingPermission")
 class MainActivity : ComponentActivity() {
@@ -68,6 +70,8 @@ class MainActivity : ComponentActivity() {
         bleUtils.setupBluetooth(this)
     }
 }
+
+///////////////////////////////// VIEW-MODEL \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -168,6 +172,8 @@ class MainViewModel @Inject constructor(
     }
 
 }
+
+/////////////////////////////// COMPOSE UI \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 @Composable
 fun MainScreen(viewModel: MainViewModel = viewModel()) {
