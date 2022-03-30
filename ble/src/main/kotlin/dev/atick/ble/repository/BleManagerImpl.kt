@@ -51,6 +51,7 @@ class BleManagerImpl @Inject constructor(
     }
 
     override fun readCharacteristic(serviceUuid: String, charUuid: String) {
+        Logger.w("Reading Value ... ")
         bluetoothGatt?.let { gatt ->
             val characteristic = gatt
                 .getService(UUID.fromString(serviceUuid))
@@ -91,6 +92,35 @@ class BleManagerImpl @Inject constructor(
                         return
                     }
                     writeDescriptor(cccDescriptor, payload)
+                } ?: Logger.e("${char.uuid}: CCCD Not Found!")
+            }
+        } ?: error("Not connected to a BLE device!")
+    }
+
+    override fun disableNotification(serviceUuid: String, charUuid: String) {
+        val cccdUuid = UUID.fromString(CCCD_UUID)
+        bluetoothGatt?.let { gatt ->
+            val characteristic = gatt
+                .getService(UUID.fromString(serviceUuid))
+                ?.getCharacteristic(UUID.fromString(charUuid))
+            characteristic?.let { char ->
+                if (!char.isIndicatable() && char.isNotifiable()) {
+                    Logger.e("Notification not Supported")
+                }
+                Logger.w("Disabling Notification ... ")
+                char.getDescriptor(cccdUuid)?.let { cccDescriptor ->
+                    if (bluetoothGatt?.setCharacteristicNotification(
+                            characteristic,
+                            true
+                        ) == false
+                    ) {
+                        Logger.e("Disabling Notification Failed!")
+                        return
+                    }
+                    writeDescriptor(
+                        cccDescriptor,
+                        BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
+                    )
                 } ?: Logger.e("${char.uuid}: CCCD Not Found!")
             }
         } ?: error("Not connected to a BLE device!")

@@ -24,6 +24,7 @@ interface BleManager {
     fun discoverServices()
     fun readCharacteristic(serviceUuid: String, charUuid: String)
     fun enableNotification(serviceUuid: String, charUuid: String)
+    fun disableNotification(serviceUuid: String, charUuid: String)
     fun stopScan()
 
     /////////////////////////////////////////////////////////

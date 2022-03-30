@@ -115,7 +115,6 @@ class MainViewModel @Inject constructor(
         serviceUuid: String = BATTERY_SERVICE_UUID,
         charUuid: String = BATTERY_LEVEL_UUID
     ) {
-        Logger.i("Reading ... ")
         bleManager.readCharacteristic(serviceUuid, charUuid)
     }
 
@@ -123,8 +122,14 @@ class MainViewModel @Inject constructor(
         serviceUuid: String = HEART_RATE_SERVICE_UUID,
         charUuid: String = HEART_RATE_UUID
     ) {
-        Logger.i("Reading ... ")
         bleManager.enableNotification(serviceUuid, charUuid)
+    }
+
+    fun disableNotification(
+        serviceUuid: String = HEART_RATE_SERVICE_UUID,
+        charUuid: String = HEART_RATE_UUID
+    ) {
+        bleManager.disableNotification(serviceUuid, charUuid)
     }
 
     fun stopScan() {
@@ -216,6 +221,13 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     onClick = { viewModel.enableNotification() }
                 ) {
                     Text(text = "Enable Heart Rate Notification")
+                }
+
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { viewModel.disableNotification() }
+                ) {
+                    Text(text = "Disable Heart Rate Notification")
                 }
             }
         }
