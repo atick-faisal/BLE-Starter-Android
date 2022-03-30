@@ -4,17 +4,18 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.atick.ble.repository.BLEManager
-import dev.atick.ble.repository.BLEManagerImpl
+import dev.atick.ble.repository.BleManager
+import dev.atick.ble.repository.BleManagerImpl
 import javax.inject.Singleton
 
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class BLEModule {
+@kotlinx.coroutines.ExperimentalCoroutinesApi
+abstract class BleManagerModule {
     @Binds
     @Singleton
     abstract fun bindBLEManager(
-        bleManagerImpl: BLEManagerImpl
-    ): BLEManager
+        bleManagerImpl: BleManagerImpl
+    ): BleManager
 }

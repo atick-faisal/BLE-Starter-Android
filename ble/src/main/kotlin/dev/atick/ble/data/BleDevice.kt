@@ -1,6 +1,6 @@
 package dev.atick.ble.data
 
-data class BLEDevice(
+data class BleDevice(
     val name: String,
     val address: String
 )
