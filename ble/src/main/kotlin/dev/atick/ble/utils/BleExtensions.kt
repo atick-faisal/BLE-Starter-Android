@@ -2,9 +2,14 @@ package dev.atick.ble.utils
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattService
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanSettings
+import dev.atick.ble.data.BleCharacteristic
+import dev.atick.ble.data.BleDescriptor
+import dev.atick.ble.data.BleService
+import dev.atick.core.utils.extensions.toHexString
 import java.util.*
 
 
@@ -14,6 +19,32 @@ fun BluetoothLeScanner.scan(scanCallback: ScanCallback) {
         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
         .build()
     startScan(null, scanSettings, scanCallback)
+}
+
+fun BluetoothGattCharacteristic.simplify(): BleCharacteristic {
+    return BleCharacteristic(
+        uuid = uuid.toShortString(),
+        property = properties.toString(),
+        permission = permissions.toString(),
+        value = value?.toHexString(),
+        descriptors = descriptors?.map { descriptor ->
+            BleDescriptor(
+                uuid = descriptor.uuid.toShortString(),
+                value = descriptor.value?.toHexString()
+            )
+        } ?: listOf()
+    )
+}
+
+fun BluetoothGattService.simplify(): BleService {
+    return BleService(
+        name = uuid.getName(),
+        uuid = uuid.toShortString(),
+        characteristics =
+        characteristics?.map { char ->
+            char.simplify()
+        } ?: listOf()
+    )
 }
 
 fun BluetoothGattCharacteristic.isReadable(): Boolean =

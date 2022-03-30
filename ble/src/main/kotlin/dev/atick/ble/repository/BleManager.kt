@@ -17,12 +17,14 @@ interface BleManager {
         onServiceDiscovered: (List<BleService>) -> Unit,
         onCharacteristicRead: (BleCharacteristic) -> Unit,
         onCharacteristicChange: (BleCharacteristic) -> Unit,
+        onCharacteristicWrite: (BleCharacteristic) -> Unit
     )
 
     fun startScan()
     fun connect(context: Context, address: String)
     fun discoverServices()
     fun readCharacteristic(serviceUuid: String, charUuid: String)
+    fun writeCharacteristic(serviceUuid: String, charUuid: String, payload: ByteArray)
     fun enableNotification(serviceUuid: String, charUuid: String)
     fun disableNotification(serviceUuid: String, charUuid: String)
     fun stopScan()

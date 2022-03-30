@@ -63,6 +63,32 @@ class BleManagerImpl @Inject constructor(
         } ?: error("Not connected to a BLE device!")
     }
 
+    override fun writeCharacteristic(
+        serviceUuid: String,
+        charUuid: String,
+        payload: ByteArray
+    ) {
+        Logger.w("Writing Value ... ")
+        bluetoothGatt?.let { gatt ->
+            val characteristic = gatt
+                .getService(UUID.fromString(serviceUuid))
+                ?.getCharacteristic(UUID.fromString(charUuid))
+            characteristic?.let { char ->
+                val writeType = when {
+                    char.isWritable() ->
+                        BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                    char.isWritableWithoutResponse() ->
+                        BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+                    else ->
+                        error("Can not Write to Characteristic")
+                }
+                characteristic.writeType = writeType
+                characteristic.value = payload
+                gatt.writeCharacteristic(characteristic)
+            }
+        } ?: error("Not connected to a BLE device!")
+    }
+
     override fun enableNotification(serviceUuid: String, charUuid: String) {
         val cccdUuid = UUID.fromString(CCCD_UUID)
         bluetoothGatt?.let { gatt ->
@@ -136,6 +162,7 @@ class BleManagerImpl @Inject constructor(
         onServiceDiscovered: (List<BleService>) -> Unit,
         onCharacteristicRead: (BleCharacteristic) -> Unit,
         onCharacteristicChange: (BleCharacteristic) -> Unit,
+        onCharacteristicWrite: (BleCharacteristic) -> Unit
     ) {
         scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
@@ -165,7 +192,6 @@ class BleManagerImpl @Inject constructor(
             override fun onScanFailed(errorCode: Int) {
                 Logger.e("Scan Failed!")
             }
-
         }
 
         gattCallback = object : BluetoothGattCallback() {
@@ -232,26 +258,7 @@ class BleManagerImpl @Inject constructor(
                     gatt?.services?.let { serviceList ->
                         onServiceDiscovered(
                             serviceList.map { service ->
-                                BleService(
-                                    name = service.uuid.getName(),
-                                    uuid = service.uuid.toShortString(),
-                                    characteristics =
-                                    service.characteristics?.map { char ->
-                                        BleCharacteristic(
-                                            uuid = char.uuid.toShortString(),
-                                            property = char.properties.toString(),
-                                            permission = char.permissions.toString(),
-                                            value = char.value?.toHexString(),
-                                            descriptors = char.descriptors?.map { descriptor ->
-                                                BleDescriptor(
-                                                    uuid = descriptor.uuid.toShortString(),
-                                                    value = descriptor.value?.toHexString()
-                                                )
-                                            } ?: listOf()
-                                        )
-                                    } ?: listOf()
-
-                                )
+                                service.simplify()
                             }
                         )
                     }
@@ -270,19 +277,7 @@ class BleManagerImpl @Inject constructor(
                             "Value: ${characteristic?.value?.toHexString()}"
                         )
                         characteristic?.let { char ->
-                            val bleCharacteristic = BleCharacteristic(
-                                uuid = char.uuid.toShortString(),
-                                property = char.properties.toString(),
-                                permission = char.permissions.toString(),
-                                value = char.value?.toHexString(),
-                                descriptors = char.descriptors?.map { descriptor ->
-                                    BleDescriptor(
-                                        uuid = descriptor.uuid.toShortString(),
-                                        value = descriptor.value?.toHexString()
-                                    )
-                                } ?: listOf()
-                            )
-                            onCharacteristicRead(bleCharacteristic)
+                            onCharacteristicRead(char.simplify())
                         }
                     }
                     BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
@@ -298,8 +293,23 @@ class BleManagerImpl @Inject constructor(
                 status: Int
             ) {
                 super.onCharacteristicWrite(gatt, characteristic, status)
-                if (status == BluetoothGatt.GATT_SUCCESS)
-                    Logger.i("Characteristic Written")
+                when (status) {
+                    BluetoothGatt.GATT_SUCCESS -> {
+                        Logger.i("Characteristic Written")
+                        characteristic?.let { char ->
+                            onCharacteristicWrite(char.simplify())
+                        }
+                    }
+                    BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH -> {
+                        Logger.e("Write Exceeded Connection ATT MTU!")
+                    }
+                    BluetoothGatt.GATT_WRITE_NOT_PERMITTED -> {
+                        Logger.e("Write not Permitted")
+                    }
+                    else -> {
+                        Logger.e("Characteristic Write Failed")
+                    }
+                }
             }
 
             override fun onCharacteristicChanged(
@@ -309,19 +319,7 @@ class BleManagerImpl @Inject constructor(
                 super.onCharacteristicChanged(gatt, characteristic)
                 Logger.i("Value: ${characteristic?.value?.toHexString()}")
                 characteristic?.let { char ->
-                    val bleCharacteristic = BleCharacteristic(
-                        uuid = char.uuid.toShortString(),
-                        property = char.properties.toString(),
-                        permission = char.permissions.toString(),
-                        value = char.value?.toHexString(),
-                        descriptors = char.descriptors?.map { descriptor ->
-                            BleDescriptor(
-                                uuid = descriptor.uuid.toShortString(),
-                                value = descriptor.value?.toHexString()
-                            )
-                        } ?: listOf()
-                    )
-                    onCharacteristicChange(bleCharacteristic)
+                    onCharacteristicChange(char.simplify())
                 }
             }
 
@@ -393,137 +391,4 @@ class BleManagerImpl @Inject constructor(
             gatt.writeDescriptor(descriptor)
         } ?: error("Not connected to a BLE device!")
     }
-
-
-//    private val scanSettings = ScanSettings.Builder()
-//        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-//        .build()
-//
-//    private lateinit var scanCallback: ScanCallback
-//    private val bleScanner = bluetoothAdapter?.bluetoothLeScanner
-//    private val scanResults = mutableListOf<BluetoothDevice>()
-//    private var bluetoothGatt: BluetoothGatt? = null
-//
-//
-//    ////////////////////////////////////////////////////////////////
-//    private lateinit var callback: BluetoothGattCallback
-//    override val bleCallbacks: Flow<BleCallbacks>
-//        get() = callbackFlow {
-//            callback = object : BluetoothGattCallback() {
-//                override fun onConnectionStateChange(
-//                    gatt: BluetoothGatt?,
-//                    status: Int,
-//                    newState: Int
-//                ) {
-//                    if (status == BluetoothGatt.GATT_SUCCESS) {
-//                        when (newState) {
-//                            BluetoothProfile.STATE_CONNECTING -> {
-//                                Logger.i("Connecting")
-//                                trySend(BleCallbacks.ConnectionCallback(
-//                                    ConnectionStatus.CONNECTING
-//                                ))
-//                            }
-//                            BluetoothProfile.STATE_CONNECTED -> {
-//                                Logger.i("Connected")
-//                                trySend(BleCallbacks.ConnectionCallback(
-//                                    ConnectionStatus.CONNECTED
-//                                ))
-//                                bluetoothGatt = gatt
-//                                discoverServices()
-//                            }
-//                            BluetoothProfile.STATE_DISCONNECTED -> {
-//                                Logger.i("Disconnected")
-//                                trySend(BleCallbacks.ConnectionCallback(
-//                                    ConnectionStatus.DISCONNECTED
-//                                ))
-//                                gatt?.close()
-//                            }
-//                        }
-//                    } else {
-//                        Logger.e("Failed to Connect")
-//                        trySend(BleCallbacks.ConnectionCallback(
-//                            ConnectionStatus.DISCONNECTED
-//                        ))
-//                        gatt?.close()
-//                    }
-//                }
-//
-//                override fun onServicesDiscovered(
-//                    gatt: BluetoothGatt?,
-//                    status: Int
-//                ) {
-//                    if (status == BluetoothGatt.GATT_SUCCESS) {
-//                        gatt?.let {
-//                            Logger.i("Found ${it.services?.size} Services")
-//                            trySend(BleCallbacks.ServicesCallback(it))
-//                        }
-//                    }
-//                    else {
-//                        Logger.e("Service Discovery Failed")
-//                        bluetoothGatt?.close()
-//                    }
-//                }
-//            }
-//
-//            awaitClose {
-////                bluetoothGatt?.close()
-//            }
-//        }
-//
-//    override fun scanForDevices(): Flow<List<BluetoothDevice>> {
-//        return callbackFlow {
-//            scanCallback = object : ScanCallback() {
-//                override fun onScanResult(callbackType: Int, result: ScanResult) {
-//                    val indexQuery = scanResults.indexOfFirst { device ->
-//                        device.address == result.device.address
-//                    }
-//                    if (indexQuery != -1) {
-//                        scanResults[indexQuery] = result.device
-//                    } else {
-//                        Logger.i("Found device: $result")
-//                        result.device?.let { device ->
-//                            scanResults.add(device)
-//                            trySend(scanResults)
-//                        }
-//                    }
-//                }
-//
-//                override fun onScanFailed(errorCode: Int) {
-//                    Logger.e("onScanFailed: code $errorCode")
-//                }
-//            }
-//
-//            bleScanner?.let { scanner ->
-//                scanResults.clear()
-//                scanner.startScan(null, scanSettings, scanCallback)
-//            }
-//
-//            awaitClose {
-//                stopScan()
-//            }
-//        }
-//    }
-//
-//    override fun connect(
-//        context: Context,
-//        deviceAddress: String
-//    ) {
-//        Logger.i("Connecting ... ")
-//        scanResults.forEach {
-//            if (deviceAddress == it.address) {
-//                it.connectGatt(context, false, callback)
-//            }
-//        }
-//    }
-//
-//
-//    override fun discoverServices() {
-//        Logger.i("Discovering ...")
-//        bluetoothGatt?.discoverServices()
-//    }
-//
-//
-//    override fun stopScan() {
-//        bleScanner?.stopScan(scanCallback)
-//    }
 }
