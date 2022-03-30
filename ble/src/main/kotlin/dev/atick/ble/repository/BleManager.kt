@@ -10,8 +10,6 @@ import dev.atick.core.utils.Event
 
 interface BleManager {
 
-    /////////////////////////////////////////////////////////
-
     val loading: LiveData<Event<Boolean>>
 
     fun setBleCallbacks(
@@ -31,13 +29,4 @@ interface BleManager {
     fun enableNotification(serviceUuid: String, charUuid: String)
     fun disableNotification(serviceUuid: String, charUuid: String)
     fun stopScan()
-
-    /////////////////////////////////////////////////////////
-
-//    val bleCallbacks: Flow<BleCallbacks>
-//
-//    fun scanForDevices(): Flow<List<BluetoothDevice>>
-//    fun connect(context: Context, deviceAddress: String)
-//    fun discoverServices()
-//    fun stopScan()
 }

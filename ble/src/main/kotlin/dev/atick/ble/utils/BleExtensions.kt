@@ -10,7 +10,6 @@ import dev.atick.ble.data.BleCharacteristic
 import dev.atick.ble.data.BleDescriptor
 import dev.atick.ble.data.BleService
 import dev.atick.core.utils.extensions.toHexString
-import java.util.*
 
 
 @SuppressLint("MissingPermission")

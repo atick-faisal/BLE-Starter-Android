@@ -35,10 +35,14 @@ class BleManagerImpl @Inject constructor(
     override val loading: LiveData<Event<Boolean>>
         get() = _loading
 
+    ////////////////////////// SCAN \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
     override fun startScan() {
         Logger.w("Starting Scan ... ")
         bleScanner?.scan(scanCallback)
     }
+
+    ////////////////////////// CONNECT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
     override fun connect(context: Context, address: String) {
         scanResults.forEach { scanResult ->
@@ -54,12 +58,16 @@ class BleManagerImpl @Inject constructor(
         }
     }
 
+    ////////////////////////// DISCOVER \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
     override fun discoverServices() {
         _loading.postValue(Event(true))
         Logger.w("Discovering Services ... ")
         bluetoothGatt?.discoverServices()
             ?: Logger.e("Not connected to a BLE device!")
     }
+
+    ////////////////////////// READ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
     override fun readCharacteristic(serviceUuid: String, charUuid: String) {
         Logger.w("Reading Value ... ")
@@ -74,6 +82,8 @@ class BleManagerImpl @Inject constructor(
             }
         } ?: Logger.e("Not connected to a BLE device!")
     }
+
+    ////////////////////////// WRITE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
     override fun writeCharacteristic(
         serviceUuid: String,
@@ -103,6 +113,8 @@ class BleManagerImpl @Inject constructor(
             }
         } ?: Logger.e("Not connected to a BLE device!")
     }
+
+    ////////////////////////// ENABLE NOTIFICATION \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
     override fun enableNotification(serviceUuid: String, charUuid: String) {
         val cccdUuid = UUID.fromString(CCCD_UUID)
@@ -138,6 +150,8 @@ class BleManagerImpl @Inject constructor(
         } ?: Logger.e("Not connected to a BLE device!")
     }
 
+    ////////////////////////// DISABLE NOTIFICATION \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
     override fun disableNotification(serviceUuid: String, charUuid: String) {
         val cccdUuid = UUID.fromString(CCCD_UUID)
         bluetoothGatt?.let { gatt ->
@@ -167,10 +181,14 @@ class BleManagerImpl @Inject constructor(
         } ?: Logger.e("Not connected to a BLE device!")
     }
 
+    ////////////////////////// STOP SCAN \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
     override fun stopScan() {
         Logger.w("Stopping Scan ... ")
         bleScanner?.stopScan(scanCallback)
     }
+
+    ////////////////////////// CALLBACKS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
     override fun setBleCallbacks(
         onDeviceFound: (BleDevice) -> Unit,
@@ -180,6 +198,8 @@ class BleManagerImpl @Inject constructor(
         onCharacteristicChange: (BleCharacteristic) -> Unit,
         onCharacteristicWrite: (BleCharacteristic) -> Unit
     ) {
+        ////////////////////////// SCAN CALLBACK \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
         scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
                 _loading.postValue(Event(false))
@@ -212,7 +232,12 @@ class BleManagerImpl @Inject constructor(
             }
         }
 
+        ////////////////////////// GATT CALLBACK \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
         gattCallback = object : BluetoothGattCallback() {
+
+            ////////////////////////// PHY UPDATE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
             override fun onPhyUpdate(
                 gatt: BluetoothGatt?,
                 txPhy: Int,
@@ -223,6 +248,8 @@ class BleManagerImpl @Inject constructor(
                     Logger.i("Phy Update: Tx = $txPhy, Rx = $rxPhy")
             }
 
+            ////////////////////////// PHY READ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
             override fun onPhyRead(
                 gatt: BluetoothGatt?,
                 txPhy: Int,
@@ -232,6 +259,8 @@ class BleManagerImpl @Inject constructor(
                 if (status == BluetoothGatt.GATT_SUCCESS)
                     Logger.i("Phy Read: Tx = $txPhy, Rx = $rxPhy")
             }
+
+            ////////////////////////// CONNECTION CHANGE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
             override fun onConnectionStateChange(
                 gatt: BluetoothGatt?,
@@ -264,6 +293,8 @@ class BleManagerImpl @Inject constructor(
                 }
             }
 
+            ////////////////////////// DISCOVER \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
             override fun onServicesDiscovered(
                 gatt: BluetoothGatt?,
                 status: Int
@@ -280,6 +311,8 @@ class BleManagerImpl @Inject constructor(
                     }
                 }
             }
+
+            ////////////////////////// CHAR READ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
             override fun onCharacteristicRead(
                 gatt: BluetoothGatt?,
@@ -302,6 +335,8 @@ class BleManagerImpl @Inject constructor(
                     else -> Logger.e("Read Failed!")
                 }
             }
+
+            ////////////////////////// CHAR WRITE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
             override fun onCharacteristicWrite(
                 gatt: BluetoothGatt?,
@@ -328,6 +363,8 @@ class BleManagerImpl @Inject constructor(
                 }
             }
 
+            ////////////////////////// CHAR CHANGE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
             override fun onCharacteristicChanged(
                 gatt: BluetoothGatt?,
                 characteristic: BluetoothGattCharacteristic?
@@ -339,6 +376,8 @@ class BleManagerImpl @Inject constructor(
                 }
             }
 
+            ////////////////////////// DESCRIPTOR READ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
             override fun onDescriptorRead(
                 gatt: BluetoothGatt?,
                 descriptor: BluetoothGattDescriptor?,
@@ -348,6 +387,8 @@ class BleManagerImpl @Inject constructor(
                 if (status == BluetoothGatt.GATT_SUCCESS)
                     Logger.i("Descriptor: $descriptor")
             }
+
+            ////////////////////////// DESCRIPTOR WRITE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
             override fun onDescriptorWrite(
                 gatt: BluetoothGatt?,
@@ -359,6 +400,8 @@ class BleManagerImpl @Inject constructor(
                     Logger.i("Descriptor Written")
             }
 
+            ////////////////////////// RELIABLE WRITE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
             override fun onReliableWriteCompleted(
                 gatt: BluetoothGatt?,
                 status: Int
@@ -367,6 +410,8 @@ class BleManagerImpl @Inject constructor(
                 if (status == BluetoothGatt.GATT_SUCCESS)
                     Logger.i("Reliable Write Complete")
             }
+
+            ////////////////////////// RSSI READ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
             override fun onReadRemoteRssi(
                 gatt: BluetoothGatt?,
@@ -378,6 +423,8 @@ class BleManagerImpl @Inject constructor(
                     Logger.i("RSSI: $rssi")
             }
 
+            ////////////////////////// MTU CHANGE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
             override fun onMtuChanged(
                 gatt: BluetoothGatt?,
                 mtu: Int,
@@ -388,6 +435,8 @@ class BleManagerImpl @Inject constructor(
                     Logger.i("MTU Changed: $mtu")
             }
 
+            ////////////////////////// SERVICE CHANGE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
             override fun onServiceChanged(
                 gatt: BluetoothGatt
             ) {
@@ -397,6 +446,8 @@ class BleManagerImpl @Inject constructor(
 
         }
     }
+
+    ////////////////////////// WRITE DESCRIPTOR \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
     private fun writeDescriptor(
         descriptor: BluetoothGattDescriptor,
