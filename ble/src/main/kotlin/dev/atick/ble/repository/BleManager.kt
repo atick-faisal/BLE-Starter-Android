@@ -1,16 +1,34 @@
 package dev.atick.ble.repository
 
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattService
 import android.content.Context
+import androidx.lifecycle.LiveData
+import dev.atick.ble.data.BleCharacteristic
+import dev.atick.ble.data.BleDevice
+import dev.atick.ble.data.BleService
 import dev.atick.ble.data.ConnectionStatus
-import kotlinx.coroutines.flow.Flow
+import dev.atick.core.utils.Event
 
 interface BleManager {
-    fun scanForDevices(): Flow<List<BluetoothDevice>>
-    fun connect(context: Context, deviceAddress: String): Flow<ConnectionStatus>
-    fun discoverServices(): Flow<List<BluetoothGattService>>
+
+    val loading: LiveData<Event<Boolean>>
+
+    fun setBleCallbacks(
+        onDeviceFound: (BleDevice) -> Unit,
+        onConnectionChange: (ConnectionStatus) -> Unit,
+        onServiceDiscovered: (List<BleService>) -> Unit,
+        onCharacteristicRead: (BleCharacteristic) -> Unit,
+        onCharacteristicChange: (BleCharacteristic) -> Unit,
+        onCharacteristicWrite: (BleCharacteristic) -> Unit = {}
+    )
+
+    fun startScan()
     fun stopScan()
+    fun connect(context: Context, address: String)
+    fun disconnect()
+    fun discoverServices()
+    fun readCharacteristic(serviceUuid: String, charUuid: String)
+    fun writeCharacteristic(serviceUuid: String, charUuid: String, payload: ByteArray)
+    fun enableNotification(serviceUuid: String, charUuid: String)
+    fun disableNotification(serviceUuid: String, charUuid: String)
+
 }

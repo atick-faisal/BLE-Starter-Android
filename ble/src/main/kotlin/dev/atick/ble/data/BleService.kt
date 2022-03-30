@@ -10,11 +10,15 @@ data class BleService(
         serviceString.append("Name: $name \n")
         serviceString.append("UUID: $uuid \n")
         characteristics.forEach { char ->
-            serviceString.append("\t Name: ${char.name} \n")
-            serviceString.append("\t UUID: ${char.uuid} \n")
-            serviceString.append("\t Property: ${char.property} \n")
-            serviceString.append("\t Permission: ${char.permission} \n")
-            serviceString.append("\t Value: ${char.value} \n")
+            serviceString.append("|__ Name: ${char.name} \n")
+            serviceString.append("|__UUID: ${char.uuid} \n")
+            serviceString.append("|__ Property: ${char.property} \n")
+            serviceString.append("|__ Permission: ${char.permission} \n")
+            serviceString.append("|__ Value: ${char.value} \n")
+            char.descriptors.forEach { descriptor ->
+                serviceString.append(".     |__ UUID: ${descriptor.uuid} \n")
+                serviceString.append(".     |__ Value: ${descriptor.value} \n")
+            }
         }
 
         return serviceString.toString()

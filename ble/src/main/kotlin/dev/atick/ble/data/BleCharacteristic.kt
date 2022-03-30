@@ -5,5 +5,6 @@ data class BleCharacteristic(
     val uuid: String,
     val property: String,
     val permission: String,
-    val value: String? = null
+    val value: String? = null,
+    val descriptors: List<BleDescriptor>
 )
