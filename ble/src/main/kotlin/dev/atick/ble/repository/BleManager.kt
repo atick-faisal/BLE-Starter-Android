@@ -22,11 +22,13 @@ interface BleManager {
     )
 
     fun startScan()
+    fun stopScan()
     fun connect(context: Context, address: String)
+    fun disconnect()
     fun discoverServices()
     fun readCharacteristic(serviceUuid: String, charUuid: String)
     fun writeCharacteristic(serviceUuid: String, charUuid: String, payload: ByteArray)
     fun enableNotification(serviceUuid: String, charUuid: String)
     fun disableNotification(serviceUuid: String, charUuid: String)
-    fun stopScan()
+
 }

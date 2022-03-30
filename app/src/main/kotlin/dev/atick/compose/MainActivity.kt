@@ -157,12 +157,14 @@ class MainViewModel @Inject constructor(
 
     private fun onCharacteristicRead(char: BleCharacteristic) {
         toastMessage.postValue(Event(char.value ?: "null"))
-        Logger.i("Value: ${char.uuid} -> ${char.value}")
     }
 
     private fun onCharacteristicChange(char: BleCharacteristic) {
         toastMessage.postValue(Event(char.value ?: "null"))
-        Logger.i("Value: ${char.uuid} -> ${char.value}")
+    }
+
+    override fun onCleared() {
+        bleManager.disconnect()
     }
 
 }

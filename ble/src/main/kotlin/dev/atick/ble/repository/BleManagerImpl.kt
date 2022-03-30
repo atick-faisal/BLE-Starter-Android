@@ -42,6 +42,13 @@ class BleManagerImpl @Inject constructor(
         bleScanner?.scan(scanCallback)
     }
 
+    ////////////////////////// STOP SCAN \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+    override fun stopScan() {
+        Logger.w("Stopping Scan ... ")
+        bleScanner?.stopScan(scanCallback)
+    }
+
     ////////////////////////// CONNECT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
     override fun connect(context: Context, address: String) {
@@ -56,6 +63,14 @@ class BleManagerImpl @Inject constructor(
                 )
             }
         }
+    }
+
+    ////////////////////////// DISCONNECT \\\\\\\\\\\\\\\\\\\\\\\\
+
+    override fun disconnect() {
+        Logger.w("Disconnecting ... ")
+        bluetoothGatt?.disconnect()
+        bluetoothGatt?.close()
     }
 
     ////////////////////////// DISCOVER \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -159,8 +174,9 @@ class BleManagerImpl @Inject constructor(
                 .getService(UUID.fromString(serviceUuid))
                 ?.getCharacteristic(UUID.fromString(charUuid))
             characteristic?.let { char ->
-                if (!char.isIndicatable() && char.isNotifiable()) {
+                if (!char.isIndicatable() && !char.isNotifiable()) {
                     Logger.e("Notification not Supported")
+                    return
                 }
                 Logger.w("Disabling Notification ... ")
                 char.getDescriptor(cccdUuid)?.let { cccDescriptor ->
@@ -179,13 +195,6 @@ class BleManagerImpl @Inject constructor(
                 } ?: Logger.e("${char.uuid}: CCCD Not Found!")
             }
         } ?: Logger.e("Not connected to a BLE device!")
-    }
-
-    ////////////////////////// STOP SCAN \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-    override fun stopScan() {
-        Logger.w("Stopping Scan ... ")
-        bleScanner?.stopScan(scanCallback)
     }
 
     ////////////////////////// CALLBACKS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -286,10 +295,12 @@ class BleManagerImpl @Inject constructor(
                         BluetoothProfile.STATE_DISCONNECTED -> {
                             Logger.i("Disconnected")
                             onConnectionChange(ConnectionStatus.DISCONNECTED)
+                            gatt?.close()
                         }
                     }
                 } else {
                     Logger.e("Connection Failed!")
+                    gatt?.close()
                 }
             }
 
@@ -309,6 +320,8 @@ class BleManagerImpl @Inject constructor(
                             }
                         )
                     }
+                } else {
+                    Logger.e("Service Discovery Failed!")
                 }
             }
 
@@ -323,7 +336,8 @@ class BleManagerImpl @Inject constructor(
                 when (status) {
                     BluetoothGatt.GATT_SUCCESS -> {
                         Logger.i(
-                            "Value: ${characteristic?.value?.toHexString()}"
+                            "UUID: ${characteristic?.uuid?.toShortString()} " +
+                                "Value: ${characteristic?.value?.toHexString()}"
                         )
                         characteristic?.let { char ->
                             onCharacteristicRead(char.simplify())
@@ -370,7 +384,10 @@ class BleManagerImpl @Inject constructor(
                 characteristic: BluetoothGattCharacteristic?
             ) {
                 _loading.postValue(Event(false))
-                Logger.i("Value: ${characteristic?.value?.toHexString()}")
+                Logger.i(
+                    "UUID: ${characteristic?.uuid?.toShortString()} " +
+                        "Value: ${characteristic?.value?.toHexString()}"
+                )
                 characteristic?.let { char ->
                     onCharacteristicChange(char.simplify())
                 }
