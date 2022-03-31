@@ -7,7 +7,14 @@
   <img src="ble.png"/>
 </p>
 
-# How to Use
+
+<h2 align="center">Technologies</h3>
+
+<p align="center">
+  <img src="technologies.png" height="70"/>
+</p>
+
+## How to Use
 The template has 3 separate modules. 
   - The **`app`** module contains all the UI related code.
   - The **`core`** module contains all the common dependencises and base classes used by other modules.
@@ -100,16 +107,17 @@ The other functions are self explanatory in my opinion. Example implementation o
   - Please call the `disconnect` method when you no longer need BLE to free up the resources.
 
 
-# Big Thanks
+## Big Thanks
 Unfortunatelly the official Android BLE documentation is not clear enough and skips some of the important details. So a BIG THANKS goes to the authors of this [article](https://punchthrough.com/android-ble-guide) for breaking things down more clearly.
 
-# Better Alternatives
+## Better Alternatives
 This code was written with simplicity and readibility in mind and by no means the most optimized solution. But there are better alternatives:
 
   - [RxAndroidBle](http://polidea.github.io/RxAndroidBle/): Based on and requires knowledge of RxJava. Big, active community. This would be a good fit if a project follows the Rx paradigm. Huge bonus: RxAndroidBle is heavy on interfaces and therefore easily testable as they also provide mocked versions of their main interfaces.
   - [Nordic Android BLE Library](https://github.com/NordicSemiconductor/Android-BLE-Library): Nordic SDK is a great way to write embedded firmware. This library is their take on abstracting away the complexities and dangers of the official Android BLE SDK. Great community and contributors who are responsive to questions. Highly recommended.
   - [BleGattCoroutines](https://github.com/Beepiz/BleGattCoroutines): Based on and requires knowledge of Kotlin coroutines. This is a great library to use if you’re comfortable with Kotlin coroutines, or if your app uses a lot of it.
   - [SweetBlue](https://github.com/iDevicesInc/SweetBlue): SweetBlue was a popular library back in its 1.x and 2.x days, but it’s not free nor open source anymore since version 3.0. Nevertheless, this is based on conventional Java style callback interfaces, much like the APIs provided in the Android SDK, and should be the most beginner-friendly to start working with. If you’re a tinkerer, you can fork the project from its 2.x days, learn about its inner workings and customize it to your liking.
+
 
 ## License
 [![licensebuttons by-nc-sa](https://licensebuttons.net/l/by-nc-sa/3.0/88x31.png)](https://creativecommons.org/licenses/by-nc-sa/4.0)
