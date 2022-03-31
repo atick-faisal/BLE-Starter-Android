@@ -99,7 +99,7 @@ interface BleManager {
 
 ```
 
-The `loading` LiviData provides live update of any ongoing process. The BLE operations (discover/read/write) **MUST** be done sequentially. An operation can not be initiated while any othe roperation is going on. [The operations can be queued using a Queuing API](https://punchthrough.com/android-ble-guide/#:~:text=device%20from%20there.-,Implementing%20a%20basic%20queuing%20mechanism,-In%20this%20section). But that's more advanced and I wish to do that in the future.
+The `loading` LiveData provides live update of any ongoing process. The BLE operations (discover/read/write) **MUST** be done sequentially. An operation can not be initiated while any othe roperation is going on. [The operations can be queued using a Queuing API](https://punchthrough.com/android-ble-guide/#:~:text=device%20from%20there.-,Implementing%20a%20basic%20queuing%20mechanism,-In%20this%20section). But that's more advanced and I wish to do that in the future.
 The other functions are self explanatory in my opinion. Example implementation of these can be found in the [MainActivity](https://github.com/atick-faisal/BLE-Starter-Android/blob/main/app/src/main/kotlin/dev/atick/compose/MainActivity.kt).
 
 #### A few important things to mention here:
