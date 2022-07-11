@@ -1,17 +1,23 @@
-# Bluetooth Low Energy Made Easy for Android <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Bluetooth.svg/1342px-Bluetooth.svg.png" width="70" height="100" align="right"/> 
-[![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/) [![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)](https://opensource.org/licenses/GPL-3.0/) [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+<p align="center">
+  <img src="logo.svg" width="300px"/>
+</p>
+
+<h3 align="center">Bluetooth Low Energy (BLE) Made Easy for Android</h3>
 
 <br>
 
 <p align="center">
-  <img src="ble.png"/>
+  <img src="https://img.shields.io/static/v1?label=IDE&message=Android Studio&style=for-the-badge&logo=android-studio&labelColor=388E3C&color=66BB6A&logoColor=white"/>
+  <img src="https://img.shields.io/static/v1?label=Language&message=Kotlin&style=for-the-badge&logo=kotlin&labelColor=7E57C2&color=EDE7F6&logoColor=white"/>
+  
+  <img src="https://img.shields.io/static/v1?label=UI&message=Jetpack Compose&style=for-the-badge&logo=figma&labelColor=1976D2&color=B3E5FC&logoColor=white"/>
+  <img src="https://img.shields.io/static/v1?label=Architecture&message=MVVM&style=for-the-badge&logo=flatpak&labelColor=FF8A65&color=FFCCBC&logoColor=white"/>
+  <br>
+  <img src="https://img.shields.io/travis/atick-faisal/IV-Dispenser-ESP32?style=for-the-badge&logo=travis&labelColor=FFF3E0"/>
 </p>
 
-
-<h2 align="center">Technologies</h3>
-
 <p align="center">
-  <img src="technologies.png" height="70"/>
+  <img src="ble.png"/>
 </p>
 
 ## How to Use
