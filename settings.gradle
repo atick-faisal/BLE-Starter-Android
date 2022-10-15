@@ -14,7 +14,8 @@ dependencyResolutionManagement {
         maven { url "https://jitpack.io" }
     }
 }
-rootProject.name = "Jetpack Compose Starter"
+rootProject.name = "BLE Starter"
 include(":app")
 include(":core")
+include(":ble")
 include(":network")
