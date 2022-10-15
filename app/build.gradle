@@ -28,18 +28,23 @@ android {
         debug {
             applicationVariants.all { variant ->
                 variant.outputs.all {
-                    outputFileName = "${"app_" + variant.buildType.name + "_v" + variant.versionName + "_" + formattedDate}.apk"
+                    outputFileName =
+                            "${"app_" + variant.buildType.name + "_v"}" +
+                                    "${variant.versionName + "_" + formattedDate}.apk"
                 }
             }
         }
 
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
 
             applicationVariants.all { variant ->
                 variant.outputs.all {
-                    outputFileName = "${"app_" + variant.buildType.name + "_v" + variant.versionName + "_" + formattedDate}.apk"
+                    outputFileName =
+                            "${"app_" + variant.buildType.name + "_v"}" +
+                                    "${variant.versionName + "_" + formattedDate}.apk"
                 }
             }
         }
@@ -67,9 +72,16 @@ android {
 
 dependencies {
     implementation project(path: ":core")
-    implementation project(path: ":ble")
+
+    // ... Navigation
+    implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
+    implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
 
     // ... Dagger Hilt
     implementation("com.google.dagger:hilt-android:$hilt_version")
     kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
+}
+
+kapt {
+    correctErrorTypes = true
 }

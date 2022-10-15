@@ -1,14 +1,16 @@
 package dev.atick.core.utils.extensions
 
+import android.app.Notification
 import android.content.Context
 import android.content.pm.PackageManager
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.atick.core.BuildConfig
 
 fun Context.showToast(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
 
 fun Context.debugMessage(error: String) {
@@ -25,21 +27,32 @@ fun Context.hasPermission(permissionType: String): Boolean {
 fun Context.showAlertDialog(
     title: String,
     message: String,
+    positiveText: String = "OK",
+    negativeText: String = "CANCEL",
     onApprove: () -> Unit = {},
     onCancel: () -> Unit = {}
 ) {
-    val builder = AlertDialog.Builder(this)
+    val builder = MaterialAlertDialogBuilder(this)
     builder.setTitle(title)
     builder.setMessage(message)
 
-    builder.setPositiveButton("OK") { _, _ ->
+    builder.setPositiveButton(positiveText) { _, _ ->
         onApprove.invoke()
     }
 
-    builder.setNegativeButton("CANCEL") { _, _ ->
+    builder.setNegativeButton(negativeText) { _, _ ->
         onCancel.invoke()
     }
 
     builder.setCancelable(false)
     builder.show()
+}
+
+fun Context.showNotification(
+    notificationId: Int,
+    notification: Notification
+) {
+    with(NotificationManagerCompat.from(this)) {
+        notify(notificationId, notification)
+    }
 }

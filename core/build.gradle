@@ -18,7 +18,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
         }
     }
     compileOptions {
@@ -36,7 +37,7 @@ android {
     }
     packagingOptions {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
     namespace("dev.atick.core")
@@ -57,7 +58,8 @@ dependencies {
     api("androidx.compose.material:material-icons-core:$compose_version")
     api("androidx.compose.material:material-icons-extended:$compose_version")
     api("androidx.compose.runtime:runtime-livedata:$compose_version")
-    api("androidx.activity:activity-compose:1.6.0")
+    api("androidx.activity:activity-compose:1.5.1")
+
 
     // ... Lifecycle
     api("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
@@ -69,6 +71,9 @@ dependencies {
     // ... Dagger Hilt
     api("com.google.dagger:hilt-android:$hilt_version")
     kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
+
+    // ... Material Color
+    api("com.github.atick-faisal:compose-material-color:3.0.0")
 
     // ... Logger
     api("com.orhanobut:logger:2.2.0")
