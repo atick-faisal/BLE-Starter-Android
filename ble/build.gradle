@@ -1,7 +1,8 @@
 plugins {
-    id("com.android.library")
-    id("kotlin-android")
     id("kotlin-kapt")
+    id("kotlin-android")
+    id("com.android.library")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -44,4 +45,8 @@ android {
 
 dependencies {
     implementation project(path: ":core")
+
+    // ... Dagger Hilt
+    api("com.google.dagger:hilt-android:$hilt_version")
+    kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
 }
