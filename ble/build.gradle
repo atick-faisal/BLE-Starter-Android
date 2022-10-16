@@ -46,6 +46,9 @@ android {
 dependencies {
     implementation project(path: ":core")
 
+    // ... BLESSED
+    api("com.github.weliem:blessed-android-coroutines:0.3.2")
+
     // ... Dagger Hilt
     api("com.google.dagger:hilt-android:$hilt_version")
     kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
