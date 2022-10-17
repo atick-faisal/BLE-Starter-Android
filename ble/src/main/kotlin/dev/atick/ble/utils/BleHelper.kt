@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface BleHelper {
     fun scanForBleDevices(): Flow<BleDevice>
+    suspend fun connect(device: BleDevice): Result<Boolean>
 }
